@@ -173,6 +173,18 @@
               this.encoded_date = track_data["Audio"][0].encoded_date;
             }
           } 
+          if ("other_bit_rate" in track_data["Audio"][0]) {
+            this.other_bit_rate = track_data["Audio"][0].other_bit_rate[0];
+          }
+          if ("other_sampling_rate" in track_data["Audio"][0]) {
+            this.other_sampling_rate = track_data["Audio"][0].other_sampling_rate[0];
+          }
+          if ("other_language" in track_data["Audio"][0]) {
+            this.other_language = track_data["Audio"][0].other_language[0];
+          }
+          if ("encoded_date" in track_data["Audio"][0]) {
+            this.encoded_date = track_data["Audio"][0].encoded_date;
+          }
           this.isBusy = false
         }
       }
