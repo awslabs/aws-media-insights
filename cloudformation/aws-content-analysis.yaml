@@ -20,13 +20,6 @@ Parameters:
       - "c4.xlarge.elasticsearch"
       - "r4.large.elasticsearch"
       - "r4.xlarge.elasticsearch"
-  DeployTestWorkflow:
-    Description: Deploy test workflow which contains operator, stage, and workflow stubs for integration testing
-    Type: String
-    Default: No
-    AllowedValues:
-      - Yes
-      - No
 
 Mappings:
   ContentAnalysisApp:
@@ -132,9 +125,9 @@ Resources:
         IdentityPoolId: !GetAtt ContentAnalysisAuthStack.Outputs.IdentityPoolId
         PoolClientId: !GetAtt ContentAnalysisAuthStack.Outputs.UserPoolClientId
 
-  # Deploy workflow
+  # Deploy Video Workflow
 
-  KitchenSinkWorkflow:
+  CompleteVideoWorkflow:
     Type: "AWS::CloudFormation::Stack"
     Properties:
       TemplateURL: !Join
@@ -151,7 +144,7 @@ Resources:
             - ContentAnalysisApp
             - SourceCode
             - TemplateKeyPrefix
-          - "/aws-content-analysis-workflow.template"
+          - "/aws-content-analysis-video-workflow.template"
       Parameters:
         WorkflowCustomResourceArn:
           Fn::ImportValue:

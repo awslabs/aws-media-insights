@@ -46,6 +46,10 @@ Resources:
             Fn::Sub: "${OperatorLibraryStack}:TextDetection"
         - Fn::ImportValue:
             Fn::Sub: "${OperatorLibraryStack}:Mediaconvert"
+        - Fn::ImportValue:
+            Fn::Sub: "${OperatorLibraryStack}:TechnicalCueDetection"
+        - Fn::ImportValue:
+            Fn::Sub: "${OperatorLibraryStack}:ShotDetection"
 
   defaultAudioStage:
     Type: Custom::CustomResource
@@ -81,7 +85,7 @@ Resources:
         - Fn::ImportValue:
             Fn::Sub: "${OperatorLibraryStack}:Polly"
 
-  MieCompleteWorkflow:
+  CasVideoWorkflow:
     DependsOn:
       - PreliminaryStage
       - defaultVideoStage
@@ -92,7 +96,7 @@ Resources:
     Properties:
       ServiceToken: !Ref WorkflowCustomResourceArn
       ResourceType: "Workflow"
-      Name: "MieCompleteWorkflow"
+      Name: "CasVideoWorkflow"
       StartAt: !GetAtt PreliminaryStage.Name
       Stages: !Sub
         - |-

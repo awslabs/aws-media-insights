@@ -432,7 +432,7 @@ export default {
     },
     workflowConfig() {
       return {
-        Name: "MieCompleteWorkflow",
+        Name: "CasVideoWorkflow",
         Configuration: {
           defaultPrelimVideoStage: {
             Thumbnail: {

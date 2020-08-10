@@ -138,9 +138,9 @@ Resources:
         IdentityPoolId: !GetAtt ContentAnalysisAuthStack.Outputs.IdentityPoolId
         PoolClientId: !GetAtt ContentAnalysisAuthStack.Outputs.UserPoolClientId
 
-  # Deploy workflow
+  # Deploy video workflow
 
-  KitchenSinkWorkflow:
+  CompleteVideoWorkflow:
     Type: "AWS::CloudFormation::Stack"
     Properties:
       TemplateURL: !Join
@@ -157,7 +157,7 @@ Resources:
             - ContentAnalysisApp
             - SourceCode
             - TemplateKeyPrefix
-          - "/aws-content-analysis-workflow.template"
+          - "/aws-content-analysis-video-workflow.template"
       Parameters:
         WorkflowCustomResourceArn:
           Fn::GetAtt:
