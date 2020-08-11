@@ -118,10 +118,6 @@
             </div>
             <div v-else>
               <VideoPlayer :options="videoOptions" />
-              <LineChart />
-            </div>
-          </div>
-          <div v-if="videoLoaded">
               <div v-if="currentView === 'ShotDetection'">
                 <br>
               </div>
