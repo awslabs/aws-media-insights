@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: "2010-09-09"
-Description: "AWS Content Analysis Workflow - Workflow to run all analyses"
+Description: "AWS Content Analysis Workflow - Workflow to run video analyses"
 
 Parameters:
   WorkflowCustomResourceArn:

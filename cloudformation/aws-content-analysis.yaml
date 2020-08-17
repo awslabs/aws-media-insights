@@ -153,6 +153,36 @@ Resources:
           Fn::ImportValue:
             !Sub "${MieStackName}:OperatorLibraryStack"
 
+  # Deploy image workflow 
+
+  CompleteImageWorkflow:
+    Type: "AWS::CloudFormation::Stack"
+    Properties:
+      TemplateURL: !Join
+        - ""
+        - - "https://"
+          - !FindInMap
+            - ContentAnalysisApp
+            - SourceCode
+            - S3Bucket
+          - .s3-
+          - !Ref AWS::Region
+          - ".amazonaws.com/"
+          - !FindInMap
+            - ContentAnalysisApp
+            - SourceCode
+            - TemplateKeyPrefix
+          - "/aws-content-analysis-image-workflow.template"
+      Parameters:
+        WorkflowCustomResourceArn:
+          Fn::GetAtt:
+            - MediaInsightsFrameworkStack
+            - Outputs.WorkflowCustomResourceArn
+        OperatorLibraryStack:
+          Fn::GetAtt:
+            - MediaInsightsFrameworkStack
+            - Outputs.OperatorLibraryStack
+
   # Custom resources
 
   StringFunctions:

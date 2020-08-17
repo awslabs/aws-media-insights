@@ -618,7 +618,7 @@ export default {
                 Image: {}
               }
             },
-            Name: "ImageWorkflow",
+            Name: "CasImageWorkflow",
             Configuration: {
               ValidationStage: {
                 MediainfoImage: {
@@ -658,7 +658,7 @@ export default {
       } else {
         if (media_type.match(/image/g)) {
           data = {
-            Name: "ImageWorkflow",
+            Name: "CasImageWorkflow",
             Configuration: {
               ValidationStage: {
                 MediainfoImage: {
