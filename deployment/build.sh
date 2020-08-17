@@ -7,7 +7,7 @@
 #   Build cloud formation templates for the Media Insights Engine
 #
 # USAGE:
-#  ./build-s3-dist.sh {SOURCE-BUCKET} {VERSION} {REGION} [PROFILE]
+#  ./build.sh {SOURCE-BUCKET} {VERSION} {REGION} [PROFILE]
 #    SOURCE-BUCKET should be the name for the S3 bucket location where the
 #      template will source the Lambda code from.
 #    VERSION should be in a format like v1.0.0
@@ -21,8 +21,8 @@
 # Check to see if input has been provided:
 if [ -z "$1" ] || [ -z "$2" ] || [ -z "$3" ]; then
     echo "Please provide the base source bucket name,  version where the lambda code will eventually reside and the region of the deploy."
-    echo "USAGE: ./build-s3-dist.sh SOURCE-BUCKET VERSION REGION [PROFILE]"
-    echo "For example: ./build-s3-dist.sh mie01 v1.0.0 us-east-1 default"
+    echo "USAGE: ./build.sh SOURCE-BUCKET VERSION REGION [PROFILE]"
+    echo "For example: ./build.sh mie01 v1.0.0 us-east-1 default"
     exit 1
 fi
 
