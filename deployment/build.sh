@@ -223,19 +223,10 @@ echo "--------------------------------------------------------------------------
 
 echo ""
 echo "Templates to deploy:"
-if [ "$region" == "us-east-1" ]; then
-  echo "With existing MIE deployment:"
-  echo https://"$bucket".s3.amazonaws.com/content-analysis-solution/"$version"/cf/aws-content-analysis.template
-  echo "Without existing MIE deployment:"
-  echo https://"$bucket".s3.amazonaws.com/content-analysis-solution/"$version"/cf/aws-content-analysis-deploy-mie.template
-
-else
-  echo "With existing MIE deployment:"
-  echo https://"$bucket".s3."$region".amazonaws.com/content-analysis-solution/"$version"/cf/aws-content-analysis.template
-  echo "Without existing MIE deployment:"
-  echo https://"$bucket".s3."$region".amazonaws.com/content-analysis-solution/"$version"/cf/aws-content-analysis-deploy-mie.template
-
-fi
+echo "With existing MIE deployment:"
+echo https://"$bucket".s3."$region".amazonaws.com/content-analysis-solution/"$version"/cf/aws-content-analysis.template
+echo "Without existing MIE deployment:"
+echo https://"$bucket".s3."$region".amazonaws.com/content-analysis-solution/"$version"/cf/aws-content-analysis-deploy-mie.template
 
 echo "------------------------------------------------------------------------------"
 echo "Done"
