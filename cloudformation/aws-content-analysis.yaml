@@ -42,7 +42,7 @@ Resources:
             - ContentAnalysisApp
             - SourceCode
             - S3Bucket
-          - .s3-
+          - .s3.
           - !Ref AWS::Region
           - ".amazonaws.com/"
           - !FindInMap
@@ -70,7 +70,7 @@ Resources:
             - ContentAnalysisApp
             - SourceCode
             - S3Bucket
-          - .s3-
+          - .s3.
           - !Ref AWS::Region
           - ".amazonaws.com/"
           - !FindInMap
@@ -102,7 +102,7 @@ Resources:
             - ContentAnalysisApp
             - SourceCode
             - S3Bucket
-          - .s3-
+          - .s3.
           - !Ref AWS::Region
           - ".amazonaws.com/"
           - !FindInMap
@@ -137,7 +137,7 @@ Resources:
             - ContentAnalysisApp
             - SourceCode
             - S3Bucket
-          - .s3-
+          - .s3.
           - !Ref AWS::Region
           - ".amazonaws.com/"
           - !FindInMap
@@ -165,7 +165,7 @@ Resources:
             - ContentAnalysisApp
             - SourceCode
             - S3Bucket
-          - .s3-
+          - .s3.
           - !Ref AWS::Region
           - ".amazonaws.com/"
           - !FindInMap
@@ -175,13 +175,11 @@ Resources:
           - "/aws-content-analysis-image-workflow.template"
       Parameters:
         WorkflowCustomResourceArn:
-          Fn::GetAtt:
-            - MediaInsightsFrameworkStack
-            - Outputs.WorkflowCustomResourceArn
+          Fn::ImportValue:
+            !Sub "${MieStackName}:WorkflowCustomResourceArn"
         OperatorLibraryStack:
-          Fn::GetAtt:
-            - MediaInsightsFrameworkStack
-            - Outputs.OperatorLibraryStack
+          Fn::ImportValue:
+            !Sub "${MieStackName}:OperatorLibraryStack"
 
   # Custom resources
 
@@ -195,7 +193,7 @@ Resources:
             - ContentAnalysisApp
             - SourceCode
             - S3Bucket
-          - .s3-
+          - .s3.
           - !Ref AWS::Region
           - ".amazonaws.com/"
           - !FindInMap
