@@ -401,7 +401,7 @@
         let media_type = filename.substring(filename.lastIndexOf(".")).toLowerCase();
         if (supported_image_types.includes(media_type)) {
           // use the uploaded image as a thumbnail
-          thumbnailS3Key = 'private/assets/' + assetId + '/input/' + filename;
+          thumbnailS3Key = 'private/assets/' + assetId + '/input/public/upload/' + filename;
         }
         let [thumbnail, workflowStatus] = await Promise.all([this.getAssetThumbnail(bucket, thumbnailS3Key), this.getAssetWorkflowStatus(assetId)]);
         if (workflowStatus[0] && thumbnail)
