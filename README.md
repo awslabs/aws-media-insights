@@ -49,7 +49,7 @@ aws cloudformation create-stack --stack-name $WEBAPP_STACK_NAME --template-url $
 ```
 When finished your stack should look like this:
 
-![](doc/images/nested_stack.png)
+![](doc/images/nested_stacks.png)
 
 # Analysis Workflow
 
