@@ -28,9 +28,9 @@ Region| Launch
 US East (N. Virginia) | [![Launch in us-east-1](doc/images/launch-stack.png)](https://console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks/new?stackName=mie&templateURL=https://rodeolabz-us-east-1.s3.amazonaws.com/content-analysis-solution/beta01/cf/aws-content-analysis-deploy-mie.template)
 US West (Oregon) | [![Launch in us-west-2](doc/images/launch-stack.png)](https://console.aws.amazon.com/cloudformation/home?region=us-west-2#/stacks/new?stackName=mie&templateURL=https://rodeolabz-us-west-2.s3.amazonaws.com/content-analysis-solution/beta01/cf/aws-content-analysis-deploy-mie.template)
 
-## Build from source
+## Build from scratch
 
-The MIE framework must be installed in your AWS account before installing this front-end application. The following commands will build and deploy this front-end application with a prebuilt version of the most recent MIE release. Be sure to define values for `EMAIL`, `WEBAPP_STACK_NAME`, and `REGION` first.
+The MIE framework must be installed in your AWS account before installing this  application. The following commands will build and deploy this application with a prebuilt version of the most recent MIE release. Be sure to define values for `EMAIL`, `WEBAPP_STACK_NAME`, and `REGION` first.
 
 ```
 git clone https://github.com/awslabs/aws-media-insights
@@ -88,8 +88,17 @@ Here are some sample searches:
 * You can search for phrases in Comprehend results like this, `PhraseText:"some deep water" AND Confidence:>80`
 * To see the full set of attributes that you can search for, click the Analytics menu item and search for "*" in the Discover tab of Kibana.
 
-# DEVELOPERS:
+# Developers
 
 Join our Gitter chat at [https://gitter.im/awslabs/aws-media-insights-engine](https://gitter.im/awslabs/aws-media-insights-engine). This public chat forum was created to foster communication between MIE developers worldwide.
 
 [![Gitter chat](https://badges.gitter.im/gitterHQ/gitter.png)](https://gitter.im/awslabs/aws-media-insights-engine)
+
+MIE is extendable in the following ways:
+
+* Run existing workflows with custom  configurations.
+* Create new operators for new types of media analysis or transformation
+* Create new workflows using the existing or new operators.
+* Stream data to new data storage services, such as Elasticsearch or Amazon Redshift.
+
+See the [Implementation Guide](https://github.com/awslabs/aws-media-insights/blob/master/IMPLEMENTATION_GUIDE.md) for the MIE API reference and builder's guide.
