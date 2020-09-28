@@ -393,8 +393,8 @@ Validating data in Elasticsearch is easiest via the Kibana GUI. However, access 
 ```
 
 Click Submit to save the new policy. After your domain is finished updating, click on the link to open Kibana. Now click on the **Discover** link from the left-hand side menu. This should take you to a page for creating an index pattern if you haven't created one already. Create an `mie*` index pattern in the **Index pattern** textbox. This will include all the indices that were created in the MIE stack.
-    
-![alt](doc/images/kibana-create-index.png)
+
+<img src="doc/images/kibana-create-index.png" width=300>
 
 Now you can use Kibana to validate that your operator's data is present in Elasticsearch. You can validate this by running a workflow where your operator is the only enabled operator, then searching for the asset_id produced by that workflow in Kibana.
 
