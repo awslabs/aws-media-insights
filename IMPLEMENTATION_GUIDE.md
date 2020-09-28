@@ -11,35 +11,23 @@ Join our Gitter chat at [https://gitter.im/awslabs/aws-media-insights-engine](ht
 [1. Overview](#1-overview)
 - [1.2. Architecture Overview](#12-architecture-overview)
 
-[2. AWS CloudFormation Template](#2-aws-cloudformation-template)
+[2. Security](#2-security)
 
-[3. Automated Deployment](#3-mated-deployment)
+[3. Developer Quick Start Guide](#3-developer-quick-start-guide)
 - [3.1. Prerequisites](#31-prerequisites)
-
-[4. Security](#4-security)
-
-[5. Getting Started With the Sample Application](#5-getting-started-with-the-sample-application)
-- [5.1. Logging in to the Application](#51-logging-in-to-the-application)
-- [5.2. The Upload Page](#52-the-upload-page)
-- [5.3. The Collections Page](#53-the-collections-page)
-- [5.4. The Analytics Page](#54-the-analytics-page)
-
-[6. Developer Quick Start Guide](#6-developer-quick-start-guide)
-- [6.1. Prerequisites](#61-prerequisites)
-- [6.2. Building MIE from source code](#62-building-mie-from-source-code)
-  - [Build and distribute the code to AWS](#621-build-and-distribute-the-code-to-aws)
-  - [Deploy the stack](#622-deploy-the-stack)
-- [6.3. Implementing a new Operator in MIE](#63-implementing-a-new-operator-in-mie)
+- [3.2. Building MIE from source code](#32-building-mie-from-source-code)
+- [3.3. Implementing a new Operator in MIE](#33-implementing-a-new-operator-in-mie)
   - [Step 1: Write operator Lambda functions](#step-1-write-operator-lambda-functions)
   - [Step 2: Add your operator to the MIE operator library](#step-2-add-your-operator-to-the-mie-operator-library)        
   - [Step 3: Add your operator to a workflow](#step-3-add-your-operator-to-a-workflow)
   - [Step 4: Add your operator to the Elasticsearch consumer](#step-4-add-your-operator-to-the-elasticsearch-consumer)     
   - [Step 5: Update the build script to deploy your operator to AWS Lambda](#step-5-update-the-build-script-to-deploy-your-operator-to-aws-lambda)        
-  - [Step 6: Test your operator](#step-6-test-your-operator)
+  - [Step 6: Deploy your Custom Operator](#step-6-deploy-your-custom-build)
+  - [Step 7: Test your new workflow and operator](#step-7-test-your-new-workflow-and-operator)
 
-[7. API Documentation](#7-api-documentation)
+[4. API Documentation](#4-api-documentation)
 
-[8. Glossary](#8-glossary)
+[5. Glossary](#5-glossary)
 
 
 # 1. Overview
@@ -53,22 +41,22 @@ Media Insights Engine is a _serverless_ architecture on AWS. The following diagr
 
 ![](doc/images/MIE-execute-workflow-architecture.png)
 
-# 4. Security
+# 2. Security
 
 MIE uses AWS_IAM to authorize REST API requests. The following screenshot shows how to test authentication to the MIE API using Postman. Be sure to specify the AccessKey and SecretKey for your own AWS environment.
 
-![](doc/images/sample_postman.png)
+<img src="doc/images/sample_postman.png" width=600>
 
-# 6. Developer Quick Start Guide
+# 3. Developer Quick Start Guide
 
 This document will show you how to build, distribute, and deploy Media Insights Engine (MIE) on AWS and how to implement new operators within the MIE stack.
 
-## 6.1. Prerequisites
+## 3.1. Prerequisites
 
 * AWS CLI - configured
 * Docker - installed and running
 
-## 6.2. Building MIE from source code
+## 3.2. Building MIE from source code
 
 Run the following commands to build and deploy MIE cloud formation templates from scratch. Be sure to define values for `MIE_STACK_NAME` and `REGION` first.
 
@@ -89,7 +77,7 @@ aws cloudformation create-stack --stack-name $MIE_STACK_NAME --template-url http
 
 After the stack finished deploying then you should see the following 6 nested stacks (with slightly different names than shown below):
 
-![](doc/images/stack_resources.png)
+<img src="doc/images/stack_resources.png" width=300>
 
 After the stack finishes deploying then remove the temporary build bucket like this:
 
@@ -97,7 +85,7 @@ After the stack finishes deploying then remove the temporary build bucket like t
 aws s3 rb s3://$DIST_OUTPUT_BUCKET-$REGION --region $REGION --profile default --force
 ```
 
-## 6.3. Implementing a new Operator in MIE
+## 3.3. Implementing a new Operator in MIE
 
 Operators are Lambda functions that:
 
@@ -324,7 +312,7 @@ Finally, you will need to write the front-end code for retrieving your new opera
 ### Step 5: Update the build script to deploy your operator to AWS Lambda
 ***(Difficulty: 5 minutes)***
 
-Update the `# Make lambda package` section in [`build-s3-dist.sh`](deployment/build-s3-dist.sh) to zip your operator's Lambda function(s) into the `deployment/dist` directory, like this:
+Update the "`Make lambda package`" section in [`build-s3-dist.sh`](deployment/build-s3-dist.sh) to zip your operator's Lambda function(s) into the `deployment/dist` directory, like this:
 
 ```
 zip -r9 my_operator.zip my_operator.py
@@ -336,7 +324,7 @@ Run the build script to generate cloud formation templates then deploy them as d
 
 ### Step 7: Test your new workflow and operator
 
-To test workflows and operators, you will submit requests to the workflow API endpoint using AWS_IAM authorization. Tools like Postman [as shown above](#4-security) and [awscurl](https://github.com/okigan/awscurl) make AWS_IAM authorization easy. The following examples assume your AWS access key and secret key are setup as required by `awscurl`.
+To test workflows and operators, you will submit requests to the workflow API endpoint using AWS_IAM authorization. Tools like [Postman](#4-security) (as shown above) and [awscurl](https://github.com/okigan/awscurl) make AWS_IAM authorization easy. The following examples assume your AWS access key and secret key are setup as required by awscurl:
 
 *Sample command to list all available workflows:*
 ```
@@ -406,11 +394,11 @@ Validating data in Elasticsearch is easiest via the Kibana GUI. However, access 
 
 Click Submit to save the new policy. After your domain is finished updating, click on the link to open Kibana. Now click on the **Discover** link from the left-hand side menu. This should take you to a page for creating an index pattern if you haven't created one already. Create an `mie*` index pattern in the **Index pattern** textbox. This will include all the indices that were created in the MIE stack.
     
-    ![alt](doc/images/kibana-create-index.png)
+![alt](doc/images/kibana-create-index.png)
 
 Now you can use Kibana to validate that your operator's data is present in Elasticsearch. You can validate this by running a workflow where your operator is the only enabled operator, then searching for the asset_id produced by that workflow in Kibana.
 
-# 7. API Documentation
+# 4. API Documentation
 
 ## Summary:
 * Dataplane API
@@ -847,7 +835,7 @@ Now you can use Kibana to validate that your operator's data is present in Elast
     * 404: Not found 
     * 500: Internal server error
 
-# 8. Glossary
+# 5. Glossary
 
 ## Workflow API
 Triggers the execution of a workflow. Also triggers create, update and delete workflows and operators.  Monitors the status of workflows.
