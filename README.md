@@ -55,7 +55,9 @@ When finished your stack should look like this:
 
 After uploading a video or image in the GUI, the application runs a workflow in MIE that extracts insights using a variety of media analysis services on AWS and stores them in a search engine for easy exploration. The following flow diagram illustrates this workflow:
 
-![](doc/images/mie_workflow.png)
+<img src="doc/images/mie_workflow.png" width=600>
+
+This application includes the following features:
 
 * Proxy encode of videos and separation of video and audio tracks using **AWS Elemental MediaConvert**. 
 * Object and activity detection in images and video using **Amazon Rekognition**. 
@@ -101,4 +103,4 @@ MIE is extendable in the following ways:
 * Create new workflows using the existing or new operators.
 * Stream data to new data storage services, such as Elasticsearch or Amazon Redshift.
 
-See the [Implementation Guide](https://github.com/awslabs/aws-media-insights/blob/master/IMPLEMENTATION_GUIDE.md) for the MIE API reference and builder's guide.
+See the [Implementation Guide](IMPLEMENTATION_GUIDE.md) for the MIE API reference and builder's guide.
