@@ -20,7 +20,7 @@ Join our Gitter chat at [https://gitter.im/awslabs/aws-media-insights-engine](ht
   - [Step 1: Write operator Lambda functions](#step-1-write-operator-lambda-functions)
   - [Step 2: Add your operator to the MIE operator library](#step-2-add-your-operator-to-the-mie-operator-library)        
   - [Step 3: Add your operator to a workflow](#step-3-add-your-operator-to-a-workflow)
-  - [Step 4: Add your operator to the Elasticsearch consumer](#step-4-add-your-operator-to-the-elasticsearch-consumer)     
+  - [Step 4: Add your operator to the Elasticsearch consumer](#step-4-add-your-operator-to-the-elasticsearch-consumer-optional)     
   - [Step 5: Update the build script to deploy your operator to AWS Lambda](#step-5-update-the-build-script-to-deploy-your-operator-to-aws-lambda)        
   - [Step 6: Deploy your Custom Operator](#step-6-deploy-your-custom-build)
   - [Step 7: Test your new workflow and operator](#step-7-test-your-new-workflow-and-operator)
