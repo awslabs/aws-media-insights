@@ -14,7 +14,7 @@ dataplane_bucket = os.environ['DataplaneBucket']
 s3 = boto3.client('s3')
 
 # These names are the lowercase version of OPERATOR_NAME defined in /source/operators/operator-library.yaml
-supported_operators = ["textdetection", "mediainfo", "transcribe", "translate", "genericdatalookup", "labeldetection", "celebrityrecognition", "facesearch", "contentmoderation", "facedetection", "key_phrases", "entities", "key_phrases", "shotdetection", "technicalcuedetection"]
+supported_operators = ["textdetection", "mediainfo", "transcribe", "translate", "genericdatalookup", "labeldetection", "celebrityrecognition", "facesearch", "contentmoderation", "facedetection", "key_phrases", "entities", "shotdetection", "technicalcuedetection"]
 
 
 def normalize_confidence(confidence_value):
@@ -245,7 +245,7 @@ def process_face_search(asset, workflow, results):
         for page in metadata:
             if "Persons" in page:
                 for item in page["Persons"]:
-                    item["Operator"] = "faceSearch"
+                    item["Operator"] = "face_search"
                     item["Workflow"] = workflow
                     # flatten person key
                     item["PersonIndex"] = item["Person"]["Index"]
@@ -278,7 +278,7 @@ def process_face_search(asset, workflow, results):
     else:
         if "Persons" in metadata:
             for item in metadata["Persons"]:
-                item["Operator"] = "faceSearch"
+                item["Operator"] = "face_search"
                 item["Workflow"] = workflow
                 # flatten person key
                 item["PersonIndex"] = item["Person"]["Index"]
@@ -684,6 +684,7 @@ def process_entities(asset, workflow, results):
         entity["Confidence"] = confidence
 
         entity["Workflow"] = workflow
+        entity["Operator"] = "entities"
 
         del entity["Type"]
         del entity["Text"]
@@ -710,6 +711,7 @@ def process_keyphrases(asset, workflow, results):
         phrase["Confidence"] = confidence
 
         phrase["Workflow"] = workflow
+        phrase["Operator"] = "key_phrases"
 
         del phrase["Text"]
         del phrase["Score"]
