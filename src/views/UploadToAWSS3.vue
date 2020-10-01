@@ -558,7 +558,7 @@ export default {
       this.uploadErrorMessage = error;
       this.dismissCountDown = this.dismissSecs;
     },
-    
+
     // TODO: Update these methods to use events from vue bootstrap file picker component
 
     // fileAdded: function(file) {
@@ -593,7 +593,7 @@ export default {
     //   });
     //   if (this.invalidFileMessages.length === 0) this.showInvalidFile = false;
     // },
-    
+
     runWorkflow: async function(location) {
       const vm = this;
       let media_type = null;
@@ -635,6 +635,9 @@ export default {
                 },
                 labelDetectionImage: {
                   Enabled: this.enabledOperators.includes("labelDetection")
+                },
+                TextDetectionImage: {
+                  Enabled: this.enabledOperators.includes("textDetection")
                 },
                 celebrityRecognitionImage: {
                   Enabled: this.enabledOperators.includes(
@@ -726,7 +729,7 @@ export default {
         }
       }
       //console.log(JSON.stringify(data));
-      
+
       // TODO: Should this be its own function?
 
       let apiName = 'mieWorkflowApi'
@@ -827,7 +830,7 @@ export default {
           vm.isUploading = null
           vm.uploadValue = null
           vm.file = null
-          
+
       });
     },
     clearHistory() {
