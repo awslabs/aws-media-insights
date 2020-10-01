@@ -680,6 +680,9 @@ export default {
                 labelDetectionImage: {
                   Enabled: this.enabledOperators.includes("labelDetection")
                 },
+                TextDetectionImage: {
+                  Enabled: this.enabledOperators.includes("textDetection")
+                },
                 celebrityRecognitionImage: {
                   Enabled: this.enabledOperators.includes(
                     "celebrityRecognition"
