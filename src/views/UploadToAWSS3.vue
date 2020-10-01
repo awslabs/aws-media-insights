@@ -531,6 +531,7 @@ export default {
     selectAll: function() {
       this.enabledOperators = [
         "labelDetection",
+        "textDetection",
         "celebrityRecognition",
         "contentModeration",
         "faceDetection",
