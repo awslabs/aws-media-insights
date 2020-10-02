@@ -39,7 +39,6 @@ REGION=[specify a region]
 VERSION=1.0.0
 git clone https://github.com/awslabs/aws-media-insights
 cd aws-media-insights
-git checkout old_dev_webapp_merge
 cd deployment
 DATETIME=$(date '+%s')
 DIST_OUTPUT_BUCKET=media-insights-engine-frontend-$DATETIME
