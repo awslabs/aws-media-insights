@@ -28,6 +28,8 @@ Region| Launch
 US East (N. Virginia) | [![Launch in us-east-1](doc/images/launch-stack.png)](https://console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks/new?stackName=mie&templateURL=https://rodeolabz-us-east-1.s3.amazonaws.com/content-analysis-solution/v1.0.0/cf/aws-content-analysis-deploy-mie.template)
 US West (Oregon) | [![Launch in us-west-2](doc/images/launch-stack.png)](https://console.aws.amazon.com/cloudformation/home?region=us-west-2#/stacks/new?stackName=mie&templateURL=https://rodeolabz-us-west-2.s3.amazonaws.com/content-analysis-solution/v1.0.0/cf/aws-content-analysis-deploy-mie.template)
 
+See the [Implementation Guide](IMPLEMENTATION_GUIDE.md) for instructions to build and deploy from source code.
+
 # Analysis Workflow
 
 After uploading a video or image in the GUI, the application runs a workflow in MIE that extracts insights using a variety of media analysis services on AWS and stores them in a search engine for easy exploration. The following flow diagram illustrates this workflow:
@@ -73,11 +75,4 @@ Join our Gitter chat at [https://gitter.im/awslabs/aws-media-insights-engine](ht
 
 [![Gitter chat](https://badges.gitter.im/gitterHQ/gitter.png)](https://gitter.im/awslabs/aws-media-insights-engine)
 
-MIE is extendable in the following ways:
-
-* Run existing workflows with custom  configurations.
-* Create new operators for new types of media analysis or transformation
-* Create new workflows using the existing or new operators.
-* Stream data to new data storage services, such as Elasticsearch or Amazon Redshift.
-
-See the [Implementation Guide](IMPLEMENTATION_GUIDE.md) for the MIE API reference and builder's guide.
+For instructions on how to build and deploy MIE (the framework) and the Media Insights front-end application from source code, read the  [Implementation Guide](https://github.com/awslabs/aws-media-insights/blob/master/IMPLEMENTATION_GUIDE.md).
