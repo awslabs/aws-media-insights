@@ -15,8 +15,8 @@ Join our Gitter chat at [https://gitter.im/awslabs/aws-media-insights-engine](ht
 
 [3. Developer Quick Start Guide](#3-developer-quick-start-guide)
 - [3.1. Prerequisites](#31-prerequisites)
-- [3.2.  Building Media Insights (the framework) from source code](#32-building-mie-the-framework-from-source-code)
-- [3.3.  Building Media Insights (the application) from source code](#33-building-mie-the-application-from-source-code)
+- [3.2. Building MIE (the framework) from source code](#32-building-mie-the-framework-from-source-code)
+- [3.3. Building Media Insights (the application) from source code](#33-building-media-insights-the-application-from-source-code)
 - [3.4. Implementing a new Operator in MIE](#34-implementing-a-new-operator-in-mie)
   - [Step 1: Write operator Lambda functions](#step-1-write-operator-lambda-functions)
   - [Step 2: Add your operator to the MIE operator library](#step-2-add-your-operator-to-the-mie-operator-library)        
