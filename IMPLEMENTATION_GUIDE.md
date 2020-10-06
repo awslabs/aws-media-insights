@@ -101,7 +101,8 @@ DATETIME=$(date '+%s')
 DIST_OUTPUT_BUCKET=media-insights-engine-$DATETIME
 aws s3 mb s3://$DIST_OUTPUT_BUCKET-$REGION --region $REGION
 ./build-s3-dist.sh $DIST_OUTPUT_BUCKET-$REGION $VERSION $REGION 
-aws cloudformation create-stack --stack-name $MIE_STACK_NAME --template-url https://$DIST_OUTPUT_BUCKET-$REGION.s3.$REGION.amazonaws.com/media-insights-solution/$VERSION/cf/media-insights-stack.template --region $REGION --parameters ParameterKey=DeployOperatorLibrary,ParameterValue=true ParameterKey=DeployTestWorkflow,ParameterValue=true ParameterKey=MaxConcurrentWorkflows,ParameterValue=10 ParameterKey=DeployAnalyticsPipeline,ParameterValue=true --capabilities CAPABILITY_IAM CAPABILITY_NAMED_IAM CAPABILITY_AUTO_EXPAND --profile default --disable-rollback
+TEMPLATE=[copy from the last line output from the build script]
+aws cloudformation create-stack --stack-name $MIE_STACK_NAME --template-url $TEMPLATE --region $REGION --parameters ParameterKey=DeployOperatorLibrary,ParameterValue=true ParameterKey=DeployTestWorkflow,ParameterValue=true ParameterKey=MaxConcurrentWorkflows,ParameterValue=10 ParameterKey=DeployAnalyticsPipeline,ParameterValue=true --capabilities CAPABILITY_IAM CAPABILITY_NAMED_IAM CAPABILITY_AUTO_EXPAND --profile default --disable-rollback
 ```
 
 After the stack finished deploying then you should see the following 6 nested stacks (with slightly different names than shown below):
@@ -135,13 +136,13 @@ aws s3 mb s3://$DIST_OUTPUT_BUCKET-$REGION --region $REGION
 #### *Option 1:* Install front-end only
 ```
 MIE_STACK_NAME=[specify the name of your exising MIE stack]
-TEMPLATE={copy "With existing MIE deployment" link from output of build script}
+TEMPLATE=[copy "With existing MIE deployment" link from output of build script]
 aws cloudformation create-stack --stack-name $WEBAPP_STACK_NAME --template-url $TEMPLATE --region $REGION --parameters ParameterKey=MieStackName,ParameterValue=$MIE_STACK_NAME ParameterKey=AdminEmail,ParameterValue=$EMAIL --capabilities CAPABILITY_IAM CAPABILITY_NAMED_IAM CAPABILITY_AUTO_EXPAND --profile default --disable-rollback
 ```
 
 #### *Option 2:* Install back-end + front-end
 ```
-TEMPLATE={copy "Without existing MIE deployment" link from output of build script}
+TEMPLATE=[copy "Without existing MIE deployment" link from output of build script]
 aws cloudformation create-stack --stack-name $WEBAPP_STACK_NAME --template-url $TEMPLATE --region $REGION --parameters ParameterKey=AdminEmail,ParameterValue=$EMAIL --capabilities CAPABILITY_IAM CAPABILITY_NAMED_IAM CAPABILITY_AUTO_EXPAND --profile default --disable-rollback
 ```
 
