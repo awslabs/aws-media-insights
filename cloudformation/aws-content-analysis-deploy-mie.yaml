@@ -52,7 +52,7 @@ Resources:
           - ".s3."
           - !Ref AWS::Region
           - ".amazonaws.com/"
-          - "media-insights-solution/"
+          - "media_insights_engine/"
           - !Ref MieVersion
           - "/cf"
           - "/media-insights-stack.template"
