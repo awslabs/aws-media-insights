@@ -28,41 +28,6 @@ Region| Launch
 US East (N. Virginia) | [![Launch in us-east-1](doc/images/launch-stack.png)](https://console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks/new?stackName=mie&templateURL=https://rodeolabz-us-east-1.s3.amazonaws.com/content-analysis-solution/v1.0.0/cf/aws-content-analysis-deploy-mie.template)
 US West (Oregon) | [![Launch in us-west-2](doc/images/launch-stack.png)](https://console.aws.amazon.com/cloudformation/home?region=us-west-2#/stacks/new?stackName=mie&templateURL=https://rodeolabz-us-west-2.s3.amazonaws.com/content-analysis-solution/v1.0.0/cf/aws-content-analysis-deploy-mie.template)
 
-## Build from scratch
-
-The MIE framework must be installed in your AWS account before installing this  application. The following commands will build and deploy this application with a prebuilt version of the most recent MIE release. Be sure to define values for `EMAIL`, `WEBAPP_STACK_NAME`, and `REGION` first.
-
-```
-EMAIL=[specify your email]
-WEBAPP_STACK_NAME=[specify a stack name]
-REGION=[specify a region]
-VERSION=1.0.0
-git clone https://github.com/awslabs/aws-media-insights
-cd aws-media-insights
-cd deployment
-DATETIME=$(date '+%s')
-DIST_OUTPUT_BUCKET=media-insights-engine-frontend-$DATETIME
-aws s3 mb s3://$DIST_OUTPUT_BUCKET-$REGION --region $REGION
-./build.sh $DIST_OUTPUT_BUCKET-$REGION $VERSION $REGION
-```
-
-#### *Option 1:* Install front-end only
-```
-MIE_STACK_NAME=[specify the name of your exising MIE stack]
-TEMPLATE={copy "With existing MIE deployment" link from output of build script}
-aws cloudformation create-stack --stack-name $WEBAPP_STACK_NAME --template-url $TEMPLATE --region $REGION --parameters ParameterKey=MieStackName,ParameterValue=$MIE_STACK_NAME ParameterKey=AdminEmail,ParameterValue=$EMAIL --capabilities CAPABILITY_IAM CAPABILITY_NAMED_IAM CAPABILITY_AUTO_EXPAND --profile default --disable-rollback
-```
-
-#### *Option 2:* Install back-end + front-end
-```
-TEMPLATE={copy "Without existing MIE deployment" link from output of build script}
-aws cloudformation create-stack --stack-name $WEBAPP_STACK_NAME --template-url $TEMPLATE --region $REGION --parameters ParameterKey=AdminEmail,ParameterValue=$EMAIL --capabilities CAPABILITY_IAM CAPABILITY_NAMED_IAM CAPABILITY_AUTO_EXPAND --profile default --disable-rollback
-```
-
-When finished your stack should look like this:
-
-<img src="doc/images/nested_stacks.png" width=300>
-
 # Analysis Workflow
 
 After uploading a video or image in the GUI, the application runs a workflow in MIE that extracts insights using a variety of media analysis services on AWS and stores them in a search engine for easy exploration. The following flow diagram illustrates this workflow:

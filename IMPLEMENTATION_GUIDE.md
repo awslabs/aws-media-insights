@@ -15,8 +15,9 @@ Join our Gitter chat at [https://gitter.im/awslabs/aws-media-insights-engine](ht
 
 [3. Developer Quick Start Guide](#3-developer-quick-start-guide)
 - [3.1. Prerequisites](#31-prerequisites)
-- [3.2. Building MIE from source code](#32-building-mie-from-source-code)
-- [3.3. Implementing a new Operator in MIE](#33-implementing-a-new-operator-in-mie)
+- [3.2.  Building Media Insights (the framework) from source code](#32-building-mie-the-framework-from-source-code)
+- [3.3.  Building Media Insights (the application) from source code](#33-building-mie-the-application-from-source-code)
+- [3.4. Implementing a new Operator in MIE](#34-implementing-a-new-operator-in-mie)
   - [Step 1: Write operator Lambda functions](#step-1-write-operator-lambda-functions)
   - [Step 2: Add your operator to the MIE operator library](#step-2-add-your-operator-to-the-mie-operator-library)        
   - [Step 3: Add your operator to a workflow](#step-3-add-your-operator-to-a-workflow)
@@ -56,7 +57,7 @@ This document will show you how to build, distribute, and deploy Media Insights 
 * AWS CLI - configured
 * Docker - installed and running
 
-## 3.2. Building MIE from source code
+## 3.2. Building MIE (the framework) from source code
 
 Run the following commands to build and deploy MIE cloud formation templates from scratch. Be sure to define values for `MIE_STACK_NAME` and `REGION` first.
 
@@ -85,7 +86,42 @@ After the stack finishes deploying then remove the temporary build bucket like t
 aws s3 rb s3://$DIST_OUTPUT_BUCKET-$REGION --region $REGION --profile default --force
 ```
 
-## 3.3. Implementing a new Operator in MIE
+## 3.3. Building Media Insights (the application) from source code
+
+MIE (the framework) must be installed in your AWS account before installing this  application. The following commands will build and deploy this application with a prebuilt version of the most recent MIE release. Be sure to define values for `EMAIL`, `WEBAPP_STACK_NAME`, and `REGION` first.
+
+```
+EMAIL=[specify your email]
+WEBAPP_STACK_NAME=[specify a stack name]
+REGION=[specify a region]
+VERSION=1.0.0
+git clone https://github.com/awslabs/aws-media-insights
+cd aws-media-insights
+cd deployment
+DATETIME=$(date '+%s')
+DIST_OUTPUT_BUCKET=media-insights-engine-frontend-$DATETIME
+aws s3 mb s3://$DIST_OUTPUT_BUCKET-$REGION --region $REGION
+./build.sh $DIST_OUTPUT_BUCKET-$REGION $VERSION $REGION
+```
+
+#### *Option 1:* Install front-end only
+```
+MIE_STACK_NAME=[specify the name of your exising MIE stack]
+TEMPLATE={copy "With existing MIE deployment" link from output of build script}
+aws cloudformation create-stack --stack-name $WEBAPP_STACK_NAME --template-url $TEMPLATE --region $REGION --parameters ParameterKey=MieStackName,ParameterValue=$MIE_STACK_NAME ParameterKey=AdminEmail,ParameterValue=$EMAIL --capabilities CAPABILITY_IAM CAPABILITY_NAMED_IAM CAPABILITY_AUTO_EXPAND --profile default --disable-rollback
+```
+
+#### *Option 2:* Install back-end + front-end
+```
+TEMPLATE={copy "Without existing MIE deployment" link from output of build script}
+aws cloudformation create-stack --stack-name $WEBAPP_STACK_NAME --template-url $TEMPLATE --region $REGION --parameters ParameterKey=AdminEmail,ParameterValue=$EMAIL --capabilities CAPABILITY_IAM CAPABILITY_NAMED_IAM CAPABILITY_AUTO_EXPAND --profile default --disable-rollback
+```
+
+When finished your stack should look like this:
+
+<img src="doc/images/nested_stacks.png" width=300>
+
+## 3.4. Implementing a new Operator in MIE
 
 Operators are Lambda functions that:
 
