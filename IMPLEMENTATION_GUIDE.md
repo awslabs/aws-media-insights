@@ -88,7 +88,7 @@ aws s3 rb s3://$DIST_OUTPUT_BUCKET-$REGION --region $REGION --profile default --
 
 ## 3.3. Building Media Insights (the application) from source code
 
-MIE (the framework) must be installed in your AWS account before installing this  application. The following commands will build and deploy this application with a prebuilt version of the most recent MIE release. Be sure to define values for `EMAIL`, `WEBAPP_STACK_NAME`, and `REGION` first.
+MIE (the framework) must be installed in your AWS account before installing the Media Insights front-end application. The following commands will build and deploy the Media Insights front-end application with a prebuilt version of the most recent MIE release. Be sure to define values for `EMAIL`, `WEBAPP_STACK_NAME`, and `REGION` first.
 
 ```
 EMAIL=[specify your email]
