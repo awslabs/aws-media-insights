@@ -6,29 +6,14 @@ This application, designed to be a reference application for the [Media Insights
 
 # INSTALLATION
 
-## One-click deploys
-
-Use option 1 if you already have MIE installed. Use option 2 if you need to install both MIE and the GUI.
-
-#### *Option 1:* Install front-end only
-
-If you already have MIE deployed in your account, then use the following buttons to deploy this front-end application.
-
-Region| Launch
-------|-----
-US East (N. Virginia) | [![Launch in us-east-1](doc/images/launch-stack.png)](https://console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks/new?stackName=mie&templateURL=https://rodeolabz-us-east-1.s3.amazonaws.com/content-analysis-solution/v1.0.0/cf/aws-content-analysis.template)
-US West (Oregon) | [![Launch in us-west-2](doc/images/launch-stack.png)](https://console.aws.amazon.com/cloudformation/home?region=us-west-2#/stacks/new?stackName=mie&templateURL=https://rodeolabz-us-west-2.s3.amazonaws.com/content-analysis-solution/v1.0.0/cf/aws-content-analysis.template)
-
-#### *Option 2:* Install back-end + front-end
-
-If you do not have MIE deployed in your account, then use the following buttons to deploy both MIE and this front-end application. This will deploy a prebuilt version of the most recent MIE release.
+The following Cloudformation templates will deploy the Media Insights front-end application with a prebuilt version of the most recent MIE release.  
 
 Region| Launch
 ------|-----
 US East (N. Virginia) | [![Launch in us-east-1](doc/images/launch-stack.png)](https://console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks/new?stackName=mie&templateURL=https://rodeolabz-us-east-1.s3.amazonaws.com/content-analysis-solution/v1.0.0/cf/aws-content-analysis-deploy-mie.template)
 US West (Oregon) | [![Launch in us-west-2](doc/images/launch-stack.png)](https://console.aws.amazon.com/cloudformation/home?region=us-west-2#/stacks/new?stackName=mie&templateURL=https://rodeolabz-us-west-2.s3.amazonaws.com/content-analysis-solution/v1.0.0/cf/aws-content-analysis-deploy-mie.template)
 
-See the [Implementation Guide](IMPLEMENTATION_GUIDE.md) for instructions to build and deploy from source code.
+For more installation options, see the [Implementation Guide](IMPLEMENTATION_GUIDE.md).
 
 # Analysis Workflow
 
