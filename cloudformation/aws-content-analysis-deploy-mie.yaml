@@ -49,10 +49,10 @@ Resources:
         - - "https://"
           - "rodeolabz-"
           - !Ref AWS::Region
-          - ".s3-"
+          - ".s3."
           - !Ref AWS::Region
           - ".amazonaws.com/"
-          - "media-insights-solution/"
+          - "media_insights_engine/"
           - !Ref MieVersion
           - "/cf"
           - "/media-insights-stack.template"
@@ -71,7 +71,7 @@ Resources:
             - ContentAnalysisApp
             - SourceCode
             - S3Bucket
-          - .s3-
+          - ".s3."
           - !Ref AWS::Region
           - ".amazonaws.com/"
           - !FindInMap
@@ -95,7 +95,7 @@ Resources:
             - ContentAnalysisApp
             - SourceCode
             - S3Bucket
-          - .s3-
+          - ".s3."
           - !Ref AWS::Region
           - ".amazonaws.com/"
           - !FindInMap
@@ -121,7 +121,7 @@ Resources:
             - ContentAnalysisApp
             - SourceCode
             - S3Bucket
-          - .s3-
+          - ".s3."
           - !Ref AWS::Region
           - ".amazonaws.com/"
           - !FindInMap
@@ -150,7 +150,7 @@ Resources:
             - ContentAnalysisApp
             - SourceCode
             - S3Bucket
-          - .s3-
+          - ".s3."
           - !Ref AWS::Region
           - ".amazonaws.com/"
           - !FindInMap
@@ -168,7 +168,7 @@ Resources:
             - MediaInsightsFrameworkStack
             - Outputs.OperatorLibraryStack
 
-  # Deploy image workflow 
+  # Deploy image workflow
 
   CompleteImageWorkflow:
     Type: "AWS::CloudFormation::Stack"
@@ -180,7 +180,7 @@ Resources:
             - ContentAnalysisApp
             - SourceCode
             - S3Bucket
-          - .s3-
+          - ".s3."
           - !Ref AWS::Region
           - ".amazonaws.com/"
           - !FindInMap
@@ -210,7 +210,7 @@ Resources:
             - ContentAnalysisApp
             - SourceCode
             - S3Bucket
-          - .s3-
+          - ".s3."
           - !Ref AWS::Region
           - ".amazonaws.com/"
           - !FindInMap

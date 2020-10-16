@@ -11,12 +11,15 @@ Join our Gitter chat at [https://gitter.im/awslabs/aws-media-insights-engine](ht
 [1. Overview](#1-overview)
 - [1.2. Architecture Overview](#12-architecture-overview)
 
-[2. Security](#2-security)
+[2. Installation](#2-installation)
 
-[3. Developer Quick Start Guide](#3-developer-quick-start-guide)
-- [3.1. Prerequisites](#31-prerequisites)
-- [3.2. Building MIE from source code](#32-building-mie-from-source-code)
-- [3.3. Implementing a new Operator in MIE](#33-implementing-a-new-operator-in-mie)
+[3. Security](#3-security)
+
+[4. Developer Quick Start Guide](#4-developer-quick-start-guide)
+- [4.1. Prerequisites](#41-prerequisites)
+- [4.2. Building MIE (the framework) from source code](#42-building-mie-the-framework-from-source-code)
+- [4.3. Building Media Insights (the application) from source code](#43-building-media-insights-the-application-from-source-code)
+- [4.4. Implementing a new Operator in MIE](#44-implementing-a-new-operator-in-mie)
   - [Step 1: Write operator Lambda functions](#step-1-write-operator-lambda-functions)
   - [Step 2: Add your operator to the MIE operator library](#step-2-add-your-operator-to-the-mie-operator-library)        
   - [Step 3: Add your operator to a workflow](#step-3-add-your-operator-to-a-workflow)
@@ -25,11 +28,11 @@ Join our Gitter chat at [https://gitter.im/awslabs/aws-media-insights-engine](ht
   - [Step 6: Deploy your Custom Operator](#step-6-deploy-your-custom-build)
   - [Step 7: Test your new workflow and operator](#step-7-test-your-new-workflow-and-operator)
 
-[4. API Documentation](#4-api-documentation)
+[5. API Documentation](#5-api-documentation)
 
-[5. Troubleshooting](#5-troubleshooting)
+[6. Troubleshooting](#5-troubleshooting)
 
-[6. Glossary](#6-glossary)
+[7. Glossary](#6-glossary)
 
 
 # 1. Overview
@@ -43,22 +46,48 @@ Media Insights Engine is a _serverless_ architecture on AWS. The following diagr
 
 ![](doc/images/MIE-execute-workflow-architecture.png)
 
-# 2. Security
+# 2. Installation
+
+The following Cloudformation templates can be used to install MIE (the framework) and the Media Insights front-end application in your AWS account. 
+
+Use option 1 if you already have MIE installed. Use option 2 if you need to install both MIE and the Media Insights front-end application.
+
+#### *Option 1:* Install front-end only
+
+If you already have MIE deployed in your account, then use one of the following buttons to deploy the Media Insights front-end application.
+
+Region| Launch
+------|-----
+US East (N. Virginia) | [![Launch in us-east-1](doc/images/launch-stack.png)](https://console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks/new?stackName=mie&templateURL=https://rodeolabz-us-east-1.s3.amazonaws.com/content-analysis-solution/v1.0.0/cf/aws-content-analysis.template)
+US West (Oregon) | [![Launch in us-west-2](doc/images/launch-stack.png)](https://console.aws.amazon.com/cloudformation/home?region=us-west-2#/stacks/new?stackName=mie&templateURL=https://rodeolabz-us-west-2.s3.amazonaws.com/content-analysis-solution/v1.0.0/cf/aws-content-analysis.template)
+
+#### *Option 2:* Install back-end + front-end
+
+If you do not have MIE deployed in your account, then use one of the following buttons to deploy both MIE and the Media Insights front-end application. This will deploy a prebuilt version of the most recent MIE release.
+
+Region| Launch
+------|-----
+US East (N. Virginia) | [![Launch in us-east-1](doc/images/launch-stack.png)](https://console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks/new?stackName=mie&templateURL=https://rodeolabz-us-east-1.s3.amazonaws.com/content-analysis-solution/v1.0.0/cf/aws-content-analysis-deploy-mie.template)
+US West (Oregon) | [![Launch in us-west-2](doc/images/launch-stack.png)](https://console.aws.amazon.com/cloudformation/home?region=us-west-2#/stacks/new?stackName=mie&templateURL=https://rodeolabz-us-west-2.s3.amazonaws.com/content-analysis-solution/v1.0.0/cf/aws-content-analysis-deploy-mie.template)
+
+# 3. Security
 
 MIE uses AWS_IAM to authorize REST API requests. The following screenshot shows how to test authentication to the MIE API using Postman. Be sure to specify the AccessKey and SecretKey for your own AWS environment.
 
 <img src="doc/images/sample_postman.png" width=600>
 
-# 3. Developer Quick Start Guide
+# 4. Developer Quick Start Guide
 
 This document will show you how to build, distribute, and deploy Media Insights Engine (MIE) on AWS and how to implement new operators within the MIE stack.
 
-## 3.1. Prerequisites
+## 4.1. Prerequisites
+
+You must have the following build tools in order to build MIE and the Media Insights front-end application:
 
 * AWS CLI - configured
 * Docker - installed and running
 
-## 3.2. Building MIE from source code
+## 4.2. Building MIE (the framework) from source code
 
 Run the following commands to build and deploy MIE cloud formation templates from scratch. Be sure to define values for `MIE_STACK_NAME` and `REGION` first.
 
@@ -74,7 +103,8 @@ DATETIME=$(date '+%s')
 DIST_OUTPUT_BUCKET=media-insights-engine-$DATETIME
 aws s3 mb s3://$DIST_OUTPUT_BUCKET-$REGION --region $REGION
 ./build-s3-dist.sh $DIST_OUTPUT_BUCKET-$REGION $VERSION $REGION 
-aws cloudformation create-stack --stack-name $MIE_STACK_NAME --template-url https://$DIST_OUTPUT_BUCKET-$REGION.s3.$REGION.amazonaws.com/media-insights-solution/$VERSION/cf/media-insights-stack.template --region $REGION --parameters ParameterKey=DeployOperatorLibrary,ParameterValue=true ParameterKey=DeployTestWorkflow,ParameterValue=true ParameterKey=MaxConcurrentWorkflows,ParameterValue=10 ParameterKey=DeployAnalyticsPipeline,ParameterValue=true --capabilities CAPABILITY_IAM CAPABILITY_NAMED_IAM CAPABILITY_AUTO_EXPAND --profile default --disable-rollback
+TEMPLATE=[copy from the last line output from the build script]
+aws cloudformation create-stack --stack-name $MIE_STACK_NAME --template-url $TEMPLATE --region $REGION --parameters ParameterKey=DeployOperatorLibrary,ParameterValue=true ParameterKey=DeployTestWorkflow,ParameterValue=true ParameterKey=MaxConcurrentWorkflows,ParameterValue=10 ParameterKey=DeployAnalyticsPipeline,ParameterValue=true --capabilities CAPABILITY_IAM CAPABILITY_NAMED_IAM CAPABILITY_AUTO_EXPAND --profile default --disable-rollback
 ```
 
 After the stack finished deploying then you should see the following 6 nested stacks (with slightly different names than shown below):
@@ -87,7 +117,42 @@ After the stack finishes deploying then remove the temporary build bucket like t
 aws s3 rb s3://$DIST_OUTPUT_BUCKET-$REGION --region $REGION --profile default --force
 ```
 
-## 3.3. Implementing a new Operator in MIE
+## 4.3. Building Media Insights (the application) from source code
+
+MIE (the framework) must be installed in your AWS account before installing the Media Insights front-end application. The following commands will build and deploy the Media Insights front-end application with a prebuilt version of the most recent MIE release. Be sure to define values for `EMAIL`, `WEBAPP_STACK_NAME`, and `REGION` first.
+
+```
+EMAIL=[specify your email]
+WEBAPP_STACK_NAME=[specify a stack name]
+REGION=[specify a region]
+VERSION=1.0.0
+git clone https://github.com/awslabs/aws-media-insights
+cd aws-media-insights
+cd deployment
+DATETIME=$(date '+%s')
+DIST_OUTPUT_BUCKET=media-insights-engine-frontend-$DATETIME
+aws s3 mb s3://$DIST_OUTPUT_BUCKET-$REGION --region $REGION
+./build.sh $DIST_OUTPUT_BUCKET-$REGION $VERSION $REGION
+```
+
+#### *Option 1:* Install front-end only
+```
+MIE_STACK_NAME=[specify the name of your exising MIE stack]
+TEMPLATE=[copy "With existing MIE deployment" link from output of build script]
+aws cloudformation create-stack --stack-name $WEBAPP_STACK_NAME --template-url $TEMPLATE --region $REGION --parameters ParameterKey=MieStackName,ParameterValue=$MIE_STACK_NAME ParameterKey=AdminEmail,ParameterValue=$EMAIL --capabilities CAPABILITY_IAM CAPABILITY_NAMED_IAM CAPABILITY_AUTO_EXPAND --profile default --disable-rollback
+```
+
+#### *Option 2:* Install back-end + front-end
+```
+TEMPLATE=[copy "Without existing MIE deployment" link from output of build script]
+aws cloudformation create-stack --stack-name $WEBAPP_STACK_NAME --template-url $TEMPLATE --region $REGION --parameters ParameterKey=AdminEmail,ParameterValue=$EMAIL --capabilities CAPABILITY_IAM CAPABILITY_NAMED_IAM CAPABILITY_AUTO_EXPAND --profile default --disable-rollback
+```
+
+When finished your stack should look like this:
+
+<img src="doc/images/nested_stacks.png" width=300>
+
+## 4.4. Implementing a new Operator in MIE
 
 Operators are Lambda functions that:
 
@@ -400,7 +465,7 @@ Click Submit to save the new policy. After your domain is finished updating, cli
 
 Now you can use Kibana to validate that your operator's data is present in Elasticsearch. You can validate this by running a workflow where your operator is the only enabled operator, then searching for the asset_id produced by that workflow in Kibana.
 
-# 4. API Documentation
+# 5. API Documentation
 
 ## Summary:
 * Dataplane API
@@ -837,7 +902,7 @@ Now you can use Kibana to validate that your operator's data is present in Elast
     * 404: Not found 
     * 500: Internal server error
 
-# 5. Troubleshooting
+# 6. Troubleshooting
 
 ## How to enable AWS X-Ray request tracing for MIE
 
@@ -860,7 +925,7 @@ Dataplane API
 
 Additionally, you can also enable tracing for API Gateway requests in the AWS Console by checking  the *Enable tracing* option for the deployed API Gateway stages for both the Workflow API and the Dataplane API.  See the [AWS console documentation](https://docs.aws.amazon.com/xray/latest/devguide/xray-services-apigateway.html) for more info.
 
-# 6. Glossary
+# 7. Glossary
 
 ## Workflow API
 Triggers the execution of a workflow. Also triggers create, update and delete workflows and operators.  Monitors the status of workflows.

@@ -223,10 +223,11 @@ echo "--------------------------------------------------------------------------
 
 echo ""
 echo "Templates to deploy:"
+echo ""
 echo "With existing MIE deployment:"
-echo https://"$bucket".s3."$region".amazonaws.com/content-analysis-solution/"$version"/cf/aws-content-analysis.template
+echo "TEMPLATE='"https://"$bucket".s3."$region".amazonaws.com/content-analysis-solution/"$version"/cf/aws-content-analysis.template"'"
 echo "Without existing MIE deployment:"
-echo https://"$bucket".s3."$region".amazonaws.com/content-analysis-solution/"$version"/cf/aws-content-analysis-deploy-mie.template
+echo "TEMPLATE='"https://"$bucket".s3."$region".amazonaws.com/content-analysis-solution/"$version"/cf/aws-content-analysis-deploy-mie.template"'"
 
 echo "------------------------------------------------------------------------------"
 echo "Done"
