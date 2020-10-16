@@ -27,7 +27,9 @@ Join our Gitter chat at [https://gitter.im/awslabs/aws-media-insights-engine](ht
 
 [4. API Documentation](#4-api-documentation)
 
-[5. Glossary](#5-glossary)
+[5. Troubleshooting](#5-troubleshooting)
+
+[6. Glossary](#6-glossary)
 
 
 # 1. Overview
@@ -835,7 +837,30 @@ Now you can use Kibana to validate that your operator's data is present in Elast
     * 404: Not found 
     * 500: Internal server error
 
-# 5. Glossary
+# 5. Troubleshooting
+
+## How to enable AWS X-Ray request tracing for MIE
+
+AWS X-Ray traces requests through the AWS platform.  It is especially useful for performance debugging, but also helps with other types of debugging by making it easy to follow what happened with a request end to end across AWS services even when the request triggered execution across multiple AWS accounts.  
+
+The AWS X-Ray service has a perpetual free tier.  When free tier limits are exceeded X-Ray tracing incurs charges as outlined by the [X-Ray pricing](https://aws.amazon.com/xray/pricing/) page.
+
+By default, tracing for MIE is disabled.  You can enable AWS X-Ray tracing for MIE requests by updating the MIE stack with the **EnableXrayTracing** MIE CloudFormation parameter to `true` .  When tracing is enabled,  all supported services that are invoked for the request will be traced starting from MIE Lambda entry points. These entry point Lambdas are as follows: 
+
+Workflow API and Control Plane: 
+
+* WorkflowAPIHandler
+* WorkflowCustomResource
+* WorkflowScheduler
+
+Dataplane API
+
+* DataplaneAPIHandler
+
+
+Additionally, you can also enable tracing for API Gateway requests in the AWS Console by checking  the *Enable tracing* option for the deployed API Gateway stages for both the Workflow API and the Dataplane API.  See the [AWS console documentation](https://docs.aws.amazon.com/xray/latest/devguide/xray-services-apigateway.html) for more info.
+
+# 6. Glossary
 
 ## Workflow API
 Triggers the execution of a workflow. Also triggers create, update and delete workflows and operators.  Monitors the status of workflows.
