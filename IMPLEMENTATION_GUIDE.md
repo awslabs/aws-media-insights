@@ -30,7 +30,9 @@ Join our Gitter chat at [https://gitter.im/awslabs/aws-media-insights-engine](ht
 
 [5. API Documentation](#5-api-documentation)
 
-[6. Glossary](#6-glossary)
+[6. Troubleshooting](#5-troubleshooting)
+
+[7. Glossary](#6-glossary)
 
 
 # 1. Overview
@@ -900,7 +902,35 @@ Now you can use Kibana to validate that your operator's data is present in Elast
     * 404: Not found 
     * 500: Internal server error
 
-# 6. Glossary
+# 6. Troubleshooting
+
+## How to enable AWS X-Ray request tracing for MIE
+
+AWS X-Ray traces requests through the AWS platform.  It is especially useful for performance debugging, but also helps with other types of debugging by making it easy to follow what happened with a request end to end across AWS services, even when the request triggered execution across multiple AWS accounts. 
+
+The AWS X-Ray service has a perpetual free tier.  When free tier limits are exceeded X-Ray tracing incurs charges as outlined by the [X-Ray pricing](https://aws.amazon.com/xray/pricing/) page.
+
+
+### Enable tracing from Lambda entry points
+
+By default, tracing for MIE is disabled.  You can enable AWS X-Ray tracing for MIE requests by updating the MIE stack with the **EnableXrayTrace** CloudFormation parameter to `true` .  When tracing is enabled,  all supported services that are invoked for the request will be traced starting from MIE Lambda entry points. These entry point Lambdas are as follows: 
+
+* WorkflowAPIHandler
+* WorkflowCustomResource
+* WorkflowScheduler
+* DataplaneAPIHandler
+
+### Enable tracing from API Gateway entry points
+
+Additionally, you can enable tracing for API Gateway requests in the AWS Console by checking  the *Enable tracing* option for the deployed API Gateway stages for both the Workflow API and the Dataplane API.  See the [AWS console documentation](https://docs.aws.amazon.com/xray/latest/devguide/xray-services-apigateway.html) for more info.
+
+### Developing custom tracing in MIE lambda functions
+
+MIE Lambdas import the [X-Ray Python packages](https://docs.aws.amazon.com/xray/latest/devguide/xray-sdk-python.html) and patch any supported libraries at runtime. MIE Lambdas are ready for future instrumentation by developers using the X-Ray Python packages.
+
+The MIE Lambda Layer contains all the packages depedencies needed to support X-Ray, so they are available to any new Lambdas that use the Layer.
+
+# 7. Glossary
 
 ## Workflow API
 Triggers the execution of a workflow. Also triggers create, update and delete workflows and operators.  Monitors the status of workflows.
