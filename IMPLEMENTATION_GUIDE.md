@@ -930,6 +930,62 @@ MIE Lambdas import the [X-Ray Python packages](https://docs.aws.amazon.com/xray/
 
 The MIE Lambda Layer contains all the packages depedencies needed to support X-Ray, so they are available to any new Lambdas that use the Layer.
 
+## MIE workflow error handling
+
+When you create MIE workflows, MIE automatically creates state machines for you with built-in error handling.
+
+There are two levels of error handling in MIE workflows:  Operator error handling and Workflow error handling.
+
+### Operator error handling
+
+#### Operator lambda error handling
+
+Operator lambdas can use the `MasExecutionError` property from the `MediaInsightsEngineLambdaHelper` python library to consistently handle errors that occur within the lambda code of MIE Operators.  
+
+The following is an example of lambda function error handling used in the **ENTITIES** (Comprehend) operator:
+
+``` python
+from MediaInsightsEngineLambdaHelper import MasExecutionError
+
+try:
+    ...
+except Exception as e:
+    operator_object.update_workflow_status("Error")
+    operator_object.add_workflow_metadata(comprehend_entity_job_id=job_id, comprehend_error="comprehend returned as failed: {e}".format(e=response["EntitiesDetectionJobPropertiesList"][0]["Message"]))
+    raise MasExecutionError(operator_object.return_output_object())
+```
+
+This code updates the outputs of the operator within the workflow_execution results with the error status, specific error information for this failure then raises an exception.
+
+#### Operator state machine error handling
+
+Operators use `Catch` and `Retry` to handle errors that occur in the steps of the operator state machine tasks.  If a step returns an error, the operator is retried.  If retry attempts fail, then the **OperatorFailed** lambda resource is invoked to handle the error by making sure the workflow_execution object contains the error status, specific information about the failure and the workflow_execution error status is updated in the control plane. The following is and example of the `Catch` and `Retry` states using Amazon States Language (ASL) for MIE state machine error handling:
+
+``` json
+{
+    ...
+    "Retry": [ {
+        "ErrorEquals": ["Lambda.ServiceException", "Lambda.AWSLambdaException", "Lambda.SdkClientException", "Lambda.Unknown", "MasExecutionError"],
+        "IntervalSeconds": 2,
+        "MaxAttempts": 2,
+        "BackoffRate": 2
+    }],
+    "Catch": [{
+        "ErrorEquals": ["States.ALL"],
+        "Next": "<OPERATION_NAME> Failed (<STAGE_NAME>)",
+        "ResultPath": "$.Outputs"
+        }]
+    ...
+
+```
+
+#### Workflow state machine error handling
+
+If an error occurs in a state machine service that causes the state machine execution for an MIE workflow to be haulted immediately, then the `Catch` and `Retry` and **OperatorFailed** lambda will not be able to be executed to handle the error.  These types of errors can occur in a number of circumstances.  For example, the Step Function history limit may be exceeded or the execution could be Stopped from the AWS console.  Failure to handle these errors will the the workflow in a perpetually running status in the MIE control plane.
+
+The **WorkflowErrorHandlerLambda:** lambda resource is triggered when the States service emits an error event for any workflow create using MIE APIs or Custom Resource.  This catch all error handler will ensure the error is reported back to the MIE control plane.
+
+
 # 7. Glossary
 
 ## Workflow API
