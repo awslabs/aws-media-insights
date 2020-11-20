@@ -934,11 +934,11 @@ The MIE Lambda Layer contains all the packages depedencies needed to support X-R
 
 When you create MIE workflows, MIE automatically creates state machines for you with built-in error handling.
 
-There are two levels of error handling in MIE workflows:  Operator error handling and Workflow error handling.
+There are two levels of error handling in MIE workflows state machines:  Operator error handling and Workflow error handling.
 
 ### Operator error handling
 
-#### Operator lambda error handling
+#### Operator lambda code
 
 Operator lambdas can use the `MasExecutionError` property from the `MediaInsightsEngineLambdaHelper` python library to consistently handle errors that occur within the lambda code of MIE Operators.  
 
@@ -955,11 +955,11 @@ except Exception as e:
     raise MasExecutionError(operator_object.return_output_object())
 ```
 
-This code updates the outputs of the operator within the workflow_execution results with the error status, specific error information for this failure then raises an exception.
+This code updates the outputs of the operator within the workflow_execution results with the error status, specific error information for this failure then raises an exception.  The exception will trigger the `Catch` and `Retry` error handling within the state machine (see next section).
 
-#### Operator state machine error handling
+#### Operator state machine ASL error handling
 
-Operators use `Catch` and `Retry` to handle errors that occur in the steps of the operator state machine tasks.  If a step returns an error, the operator is retried.  If retry attempts fail, then the **OperatorFailed** lambda resource is invoked to handle the error by making sure the workflow_execution object contains the error status, specific information about the failure and the workflow_execution error status is updated in the control plane. The following is and example of the `Catch` and `Retry` states using Amazon States Language (ASL) for MIE state machine error handling:
+Operators use `Catch` and `Retry` to handle errors that occur in the steps of the operator state machine tasks.  If a step returns an error, the operator is retried.  If retry attempts fail, then the **OperatorFailed** lambda resource is invoked to handle the error by making sure the workflow_execution object contains the error status, specific information about the failure and the workflow execution error status is propagated to the control plane. The following is an example of the `Catch` and `Retry` states using Amazon States Language (ASL) for MIE state machine error handling:
 
 ``` json
 {
@@ -981,10 +981,9 @@ Operators use `Catch` and `Retry` to handle errors that occur in the steps of th
 
 #### Workflow state machine error handling
 
-If an error occurs in a state machine service that causes the state machine execution for an MIE workflow to be haulted immediately, then the `Catch` and `Retry` and **OperatorFailed** lambda will not be able to be executed to handle the error.  These types of errors can occur in a number of circumstances.  For example, the Step Function history limit may be exceeded or the execution could be Stopped from the AWS console.  Failure to handle these errors will the the workflow in a perpetually running status in the MIE control plane.
+If an error occurs in the Step Function service that causes the state machine execution for an MIE workflow to be terminated immediately, then the `Catch` and `Retry` and **OperatorFailed** lambda will not be able to handle the error.  These types of errors can occur in a number of circumstances.  For example, when the Step Function history limit is exceeded or the execution is Stopped (aborted) from the AWS console.  Failure to handle these errors will the the workflow in a perpetually `Started` status in the MIE control plane.
 
-The **WorkflowErrorHandlerLambda:** lambda resource is triggered when the States service emits an error event for any workflow create using MIE APIs or Custom Resource.  This catch all error handler will ensure the error is reported back to the MIE control plane.
-
+The **WorkflowErrorHandlerLambda:** lambda resource is triggered when the Step Functions service emits `Step Functions Execution Status Change` EventBridge events that have an error status (`FAILED, TIMED_OUT, ABORTED`).  The error handler propagates the error to the MIE control plane if the workflow is not already completed.
 
 # 7. Glossary
 
