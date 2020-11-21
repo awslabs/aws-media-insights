@@ -93,7 +93,6 @@ Resources:
 
   ContentAnalysisWebStack:
     Type: "AWS::CloudFormation::Stack"
-    DependsOn: StringFunctions
     Properties:
       TemplateURL: !Join
         - ""
@@ -153,7 +152,7 @@ Resources:
           Fn::ImportValue:
             !Sub "${MieStackName}:OperatorLibraryStack"
 
-  # Deploy image workflow 
+  # Deploy image workflow
 
   CompleteImageWorkflow:
     Type: "AWS::CloudFormation::Stack"
@@ -180,27 +179,6 @@ Resources:
         OperatorLibraryStack:
           Fn::ImportValue:
             !Sub "${MieStackName}:OperatorLibraryStack"
-
-  # Custom resources
-
-  StringFunctions:
-    Type: "AWS::CloudFormation::Stack"
-    Properties:
-      TemplateURL: !Join
-        - ""
-        - - "https://"
-          - !FindInMap
-            - ContentAnalysisApp
-            - SourceCode
-            - S3Bucket
-          - .s3.
-          - !Ref AWS::Region
-          - ".amazonaws.com/"
-          - !FindInMap
-            - ContentAnalysisApp
-            - SourceCode
-            - TemplateKeyPrefix
-          - "/string.template"
 
 Outputs:
   ContentAnalyisSolution:
