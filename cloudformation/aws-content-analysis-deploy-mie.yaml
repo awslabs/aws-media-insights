@@ -5,8 +5,8 @@ Parameters:
   MieVersion:
     Type: String
     Description: The version of the Media Insights Engine framework to deploy
-    Default: "v1.0.0"
-    AllowedValues: ["v1.0.0"]
+    Default: "v2.0.0"
+    AllowedValues: ["v2.0.0"]
   AdminEmail:
     Description: Email address of the Content Analysis Administrator
     Type: String
@@ -22,7 +22,7 @@ Parameters:
       - "c4.xlarge.elasticsearch"
       - "r4.large.elasticsearch"
       - "r4.xlarge.elasticsearch"
-  DeployTestWorkflow:
+  DeployTestResources:
     Description: Deploy test workflow which contains operator, stage, and workflow stubs for integration testing
     Type: String
     Default: No
@@ -57,7 +57,7 @@ Resources:
           - "/cf"
           - "/media-insights-stack.template"
       Parameters:
-        DeployTestWorkflow: !Ref DeployTestWorkflow
+        DeployTestResources: !Ref DeployTestResources
 
   # Deploy Elasticsearch
 
