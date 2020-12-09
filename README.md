@@ -15,6 +15,16 @@ US West (Oregon) | [![Launch in us-west-2](doc/images/launch-stack.png)](https:/
 
 For more installation options, see the [Implementation Guide](IMPLEMENTATION_GUIDE.md).
 
+# COST
+
+You are responsible for the cost of the AWS services used while running this application. The primary cost factors are from using Amazon Rekognition and Amazon Elasticsearch Service (Amazon ES). Videos cost about $0.50 per minute to process, but can vary between $0.10 per minute and $0.60 per minute depending on the video content. If you disable Amazon Rekognition in your workflow configuration, then video costs can decrease to approximately $0.04 per minute. Data storage and Amazon ES will cost approximately ***$10.00 per day*** regardless of the quantity or type of video content.
+
+After a video is uploaded into the solution, the costs for processing are a one-time expense. However, data storage costs occur daily, as shown in the following screenshot from AWS Cost Explorer.
+
+<img src="doc/images/cost.png" width=600>
+
+For more information about cost, see the pricing webpage for each AWS service you will be using in this solution. If you need to process a large volume of videos, we recommend that you contact your AWS account representative for at-scale pricing. 
+
 # Analysis Workflow
 
 After uploading a video or image in the GUI, the application runs a workflow in MIE that extracts insights using a variety of media analysis services on AWS and stores them in a search engine for easy exploration. The following flow diagram illustrates this workflow:
