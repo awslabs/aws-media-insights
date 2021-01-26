@@ -64,14 +64,6 @@ Here are some sample searches:
 * You can search for phrases in Comprehend results like this, `PhraseText:"some deep water" AND Confidence:>80`
 * To see the full set of attributes that you can search for, click the Analytics menu item and search for "*" in the Discover tab of Kibana.
 
-# Developers
-
-Join our Gitter chat at [https://gitter.im/awslabs/aws-media-insights-engine](https://gitter.im/awslabs/aws-media-insights-engine). This public chat forum was created to foster communication between MIE developers worldwide.
-
-[![Gitter chat](https://badges.gitter.im/gitterHQ/gitter.png)](https://gitter.im/awslabs/aws-media-insights-engine)
-
-For instructions on how to build and deploy MIE (the framework) and the Media Insights front-end application from source code, read the  [Implementation Guide](IMPLEMENTATION_GUIDE.md).
-
 # Advanced Installation Options
 
 ## Deploying the demo app over an existing MIE stack
@@ -125,3 +117,11 @@ aws cloudformation create-stack --stack-name $WEBAPP_STACK_NAME --template-url $
 When finished your stack should look like this:
 
 <img src="doc/images/nested_stacks.png" width=300>
+
+# Help
+
+Join our Gitter chat at [https://gitter.im/awslabs/aws-media-insights-engine](https://gitter.im/awslabs/aws-media-insights-engine). This public chat forum was created to foster communication between MIE developers worldwide.
+
+[![Gitter chat](https://badges.gitter.im/gitterHQ/gitter.png)](https://gitter.im/awslabs/aws-media-insights-engine)
+
+For instructions on how to build and deploy MIE (the framework) and the Media Insights front-end application from source code, read the  [Implementation Guide](IMPLEMENTATION_GUIDE.md).
