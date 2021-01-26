@@ -123,5 +123,3 @@ When finished your stack should look like this:
 Join our Gitter chat at [https://gitter.im/awslabs/aws-media-insights-engine](https://gitter.im/awslabs/aws-media-insights-engine). This public chat forum was created to foster communication between MIE developers worldwide.
 
 [![Gitter chat](https://badges.gitter.im/gitterHQ/gitter.png)](https://gitter.im/awslabs/aws-media-insights-engine)
-
-For instructions on how to build and deploy MIE (the framework) and the Media Insights front-end application from source code, read the  [Implementation Guide](IMPLEMENTATION_GUIDE.md).
