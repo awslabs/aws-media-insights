@@ -124,4 +124,4 @@ aws cloudformation create-stack --stack-name $WEBAPP_STACK_NAME --template-url $
 
 When finished your stack should look like this:
 
-<img src="docs/assets/images/nested_stacks.png" width=300>
+<img src="doc/images/nested_stacks.png" width=300>
