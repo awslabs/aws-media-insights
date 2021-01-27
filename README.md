@@ -127,6 +127,34 @@ The GUI for this demo application loads media analysis data from Elasticsearch. 
 
 Finally, you will need to write front-end code to retrieve your new operator's data from Elasticsearch and render it in the GUI.
 
+When you trigger workflows with your new operator, you should be able to validate how that operator's data is being processed from the Elasticsearch consumer log. To find this log, search Lambda functions for "ElasticsearchConsumer".
+
+### Validate metadata in Elasticsearch
+
+Validating data in Elasticsearch is easiest via the Kibana GUI. However, access to Kibana is disabled by default. To enable it, open your Elasticsearch Service domain in the AWS Console and click the "Modify access policy" under the Actions menu and add a policy that allows connections from your local IP address, such as:
+
+```
+{
+  "Effect": "Allow",
+  "Principal": {
+    "AWS": "*"
+  },
+  "Action": "es:*",
+  "Resource": "arn:aws:es:us-west-2:123456789012:domain/mie-es/*",
+  "Condition": {
+    "IpAddress": {
+      "aws:SourceIp": "52.108.112.178/32"
+    }
+  }
+}
+```
+
+Click Submit to save the new policy. After your domain is finished updating, click on the link to open Kibana. Now click on the **Discover** link from the left-hand side menu. This should take you to a page for creating an index pattern if you haven't created one already. Create an `mie*` index pattern in the **Index pattern** textbox. This will include all the indices that were created in the MIE stack.
+
+<img src="docs/assets/images/kibana-create-index.png" width=600>
+
+Now you can use Kibana to validate that your operator's data is present in Elasticsearch. You can validate this by running a workflow where your operator is the only enabled operator, then searching for the asset_id produced by that workflow in Kibana.
+
 # Help
 
 Join our Gitter chat at [https://gitter.im/awslabs/aws-media-insights-engine](https://gitter.im/awslabs/aws-media-insights-engine). This public chat forum was created to foster communication between MIE developers worldwide.
