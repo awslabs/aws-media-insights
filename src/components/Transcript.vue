@@ -53,7 +53,7 @@ export default {
   },
   methods: {
     async fetchAssetData () {
-      let query = 'AssetId:'+this.$route.params.asset_id+ ' _index:mietranscript';
+      let query = 'AssetId:'+this.$route.params.asset_id+ ' _index:mievideotranscript';
       let apiName = 'contentAnalysisElasticsearch';
       let path = '/_search';
       let apiParams = {
