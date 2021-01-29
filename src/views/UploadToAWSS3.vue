@@ -253,7 +253,7 @@ export default {
         { text: "Face Search", value: "faceSearch" },
         { text: "Generic Data Lookup (video only)", value: "genericDataLookup" }
       ],
-      audioOperators: [{ text: "Transcribe", value: "Transcribe" }],
+      audioOperators: [{ text: "Transcribe", value: "TranscribeVideo" }],
       textOperators: [
         { text: "Comprehend Key Phrases", value: "ComprehendKeyPhrases" },
         { text: "Comprehend Entities", value: "ComprehendEntities" },
@@ -485,7 +485,7 @@ export default {
             }
           },
           defaultAudioStage: {
-            Transcribe: {
+            TranscribeVideo: {
               Enabled: this.enabledOperators.includes("Transcribe"),
               TranscribeLanguage: this.transcribeLanguage
             }
