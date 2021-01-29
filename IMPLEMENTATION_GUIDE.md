@@ -64,7 +64,7 @@ aws cloudformation create-stack --stack-name $MIE_STACK_NAME --template-url $TEM
 
 After the stack finished deploying then you should see the following 6 nested stacks (with slightly different names than shown below):
 
-<img src="https://github.com/awslabs/aws-media-insights-engine/tree/development/docs/assets/images/stack_resources.png" width=300>
+<img src="doc/images/stack_resources.png" width=300>
 
 After the stack finishes deploying then remove the temporary build bucket like this:
 
@@ -356,7 +356,7 @@ The data plane stores each item as an object in S3 and stores their S3 object id
 
 The data plane provides a change-data-capture (CDC) stream from DynamoDB to communicate media analysis data to stream consumers where ETL tasks can transform and load raw data to the downstream data stores that support end-user applications. This CDC stream is provided as a Kinesis Data Stream. The ARN for this is provided as an output called `AnalyticsStreamArn` in the base MIE CloudFormation stack, as shown below:
 
-<img src="https://github.com/awslabs/aws-media-insights-engine/tree/development/docs/assets/images/analytics_stream_output.png" width=400>
+<img src="doc/images/analytics_stream_output.png" width=400>
 
 For more information about how to implement Kinesis Data Stream consumers in MIE, check out the [MIE demo application](https://github.com/awslabs/aws-media-insights/blob/master/README.md#advanced-usage), which includes a data stream consumer that feeds Elasticsearch.
 
