@@ -107,7 +107,7 @@
                   :options="audioOperators"
                   name="flavour-2"
                 ></b-form-checkbox-group>
-                <div v-if="enabledOperators.includes('Transcribe')">
+                <div v-if="enabledOperators.includes('TranscribeVideo')">
                   <label>Source Language</label>
                   <b-form-select v-model="transcribeLanguage" :options="transcribeLanguages"></b-form-select>
                 </div>
@@ -235,7 +235,7 @@ export default {
         "contentModeration",
         "faceDetection",
         "thumbnail",
-        "Transcribe",
+        "TranscribeVideo",
         "Translate",
         "ComprehendKeyPhrases",
         "ComprehendEntities",
@@ -377,7 +377,7 @@ export default {
     audioFormError() {
       // Validate transcribe is enabled if any text operator is enabled
       if (
-        !this.enabledOperators.includes("Transcribe") &&
+        !this.enabledOperators.includes("TranscribeVideo") &&
         (this.enabledOperators.includes("Translate") ||
           this.enabledOperators.includes("ComprehendEntities") ||
           this.enabledOperators.includes("ComprehendKeyPhrases"))
@@ -486,7 +486,7 @@ export default {
           },
           defaultAudioStage: {
             TranscribeVideo: {
-              Enabled: this.enabledOperators.includes("Transcribe"),
+              Enabled: this.enabledOperators.includes("TranscribeVideo"),
               TranscribeLanguage: this.transcribeLanguage
             }
           },
@@ -536,13 +536,14 @@ export default {
         "contentModeration",
         "faceDetection",
         "thumbnail",
-        "Transcribe",
+        "TranscribeVideo",
         "Translate",
         "ComprehendKeyPhrases",
         "ComprehendEntities",
         "technicalCueDetection",
         "shotDetection"
       ];
+      console.log(this.enabledOperators)
     },
     clearAll: function() {
       this.enabledOperators = [];
