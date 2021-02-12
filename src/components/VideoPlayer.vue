@@ -55,7 +55,7 @@ export default {
     this.video_url = this.options.sources[0].src;
   },
   mounted: function () {
-    this.player = videojs(this.$refs.videoPlayer);
+    this.player = videojs(this.$refs.videoPlayer, {  playbackRates: [0.5, 1, 1.5, 2] });
     this.player.ready(() => {
       this.player.hotkeys({
         volumeStep: 0.1,

@@ -62,7 +62,7 @@ Resources:
       Name: !Join ["", ["defaultAudioStage-", !Ref ShortUUID]]
       Operations:
         - Fn::ImportValue:
-            Fn::Sub: "${OperatorLibraryStack}:Transcribe"
+            Fn::Sub: "${OperatorLibraryStack}:TranscribeVideo"
 
   defaultTextStage:
     Type: Custom::CustomResource

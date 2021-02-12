@@ -107,7 +107,7 @@
                   :options="audioOperators"
                   name="flavour-2"
                 ></b-form-checkbox-group>
-                <div v-if="enabledOperators.includes('Transcribe')">
+                <div v-if="enabledOperators.includes('TranscribeVideo')">
                   <label>Source Language</label>
                   <b-form-select v-model="transcribeLanguage" :options="transcribeLanguages"></b-form-select>
                 </div>
@@ -236,7 +236,7 @@ export default {
         "contentModeration",
         "faceDetection",
         "thumbnail",
-        "Transcribe",
+        "TranscribeVideo",
         "Translate",
         "ComprehendKeyPhrases",
         "ComprehendEntities",
@@ -254,7 +254,7 @@ export default {
         { text: "Face Search", value: "faceSearch" },
         { text: "Generic Data Lookup (video only)", value: "genericDataLookup" }
       ],
-      audioOperators: [{ text: "Transcribe", value: "Transcribe" }],
+      audioOperators: [{ text: "Transcribe", value: "TranscribeVideo" }],
       textOperators: [
         { text: "Comprehend Key Phrases", value: "ComprehendKeyPhrases" },
         { text: "Comprehend Entities", value: "ComprehendEntities" },
@@ -378,7 +378,7 @@ export default {
     audioFormError() {
       // Validate transcribe is enabled if any text operator is enabled
       if (
-        !this.enabledOperators.includes("Transcribe") &&
+        !this.enabledOperators.includes("TranscribeVideo") &&
         (this.enabledOperators.includes("Translate") ||
           this.enabledOperators.includes("ComprehendEntities") ||
           this.enabledOperators.includes("ComprehendKeyPhrases"))
@@ -523,6 +523,31 @@ export default {
               this.genericDataFilename === ""
                   ? "undefined"
                   : this.genericDataFilename
+        },
+        defaultAudioStage: {
+          TranscribeVideo: {
+            Enabled: this.enabledOperators.includes("TranscribeVideo"),
+            TranscribeLanguage: this.transcribeLanguage
+          }
+        },
+        defaultTextStage: {
+          Translate: {
+            Enabled: this.enabledOperators.includes("Translate"),
+            SourceLanguageCode: this.transcribeLanguage.split("-")[0],
+            TargetLanguageCode: this.targetLanguageCode
+          },
+          ComprehendEntities: {
+            Enabled: this.enabledOperators.includes("ComprehendEntities")
+          },
+          ComprehendKeyPhrases: {
+            Enabled: this.enabledOperators.includes("ComprehendKeyPhrases")
+          }
+        },
+        defaultTextSynthesisStage: {
+          // Polly is available in the MIECompleteWorkflow but not used in the front-end, so we've disabled it here.
+          Polly: {
+            Enabled: false
+          }
         }
       }
       const defaultAudioStage = {
@@ -586,13 +611,14 @@ export default {
         "contentModeration",
         "faceDetection",
         "thumbnail",
-        "Transcribe",
+        "TranscribeVideo",
         "Translate",
         "ComprehendKeyPhrases",
         "ComprehendEntities",
         "technicalCueDetection",
         "shotDetection"
       ];
+      console.log(this.enabledOperators)
     },
     clearAll: function() {
       this.enabledOperators = [];
