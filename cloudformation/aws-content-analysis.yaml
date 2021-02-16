@@ -98,7 +98,7 @@ Resources:
             - ContentAnalysisApp
             - SourceCode
             - TemplateKeyPrefix
-          - "/aws-content-analysis-uuid.template"
+          - "/aws-content-analysis-use-existing-mie-stack.template"
       Parameters:
         MieStackName: !Ref MieStackName
         S3Bucket: !FindInMap
@@ -122,7 +122,7 @@ Resources:
         ShortUUID: !GetAtt GetShortUUID.Data
 
 Outputs:
-  ContentAnalyisSolution:
+  CloudfrontUrl:
     Value: !GetAtt Uuid.Outputs.CloudfrontUrl
   ElasticEndpoint:
     Value: !GetAtt Uuid.Outputs.ElasticEndpoint

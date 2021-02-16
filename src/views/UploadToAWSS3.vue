@@ -523,36 +523,11 @@ export default {
               this.genericDataFilename === ""
                   ? "undefined"
                   : this.genericDataFilename
-        },
-        defaultAudioStage: {
-          TranscribeVideo: {
-            Enabled: this.enabledOperators.includes("TranscribeVideo"),
-            TranscribeLanguage: this.transcribeLanguage
-          }
-        },
-        defaultTextStage: {
-          Translate: {
-            Enabled: this.enabledOperators.includes("Translate"),
-            SourceLanguageCode: this.transcribeLanguage.split("-")[0],
-            TargetLanguageCode: this.targetLanguageCode
-          },
-          ComprehendEntities: {
-            Enabled: this.enabledOperators.includes("ComprehendEntities")
-          },
-          ComprehendKeyPhrases: {
-            Enabled: this.enabledOperators.includes("ComprehendKeyPhrases")
-          }
-        },
-        defaultTextSynthesisStage: {
-          // Polly is available in the MIECompleteWorkflow but not used in the front-end, so we've disabled it here.
-          Polly: {
-            Enabled: false
-          }
         }
       }
       const defaultAudioStage = {
-        Transcribe: {
-          Enabled: this.enabledOperators.includes("Transcribe"),
+        TranscribeVideo: {
+          Enabled: this.enabledOperators.includes("TranscribeVideo"),
           TranscribeLanguage: this.transcribeLanguage
         }
       }
@@ -736,7 +711,8 @@ export default {
       //console.log(JSON.stringify(data));
 
       // TODO: Should this be its own function?
-
+      console.log("workflow execution:")
+      console.log(workflow_config)
       let apiName = 'mieWorkflowApi'
       let path = 'workflow/execution'
       let requestOpts = {
@@ -781,7 +757,7 @@ export default {
       try {
         // Get the default configurations for every defined workflow:
         let response = await this.$Amplify.API.get(apiName, path, requestOpts);
-        // The aws-content-analysis-uuid.yaml Cloud Formation template appends a uuid to the workflow names in order to avoid resource conflicts when users deploy this project multiple times in the same region.
+        // The aws-content-analysis-use-existing-mie-stack.yaml Cloud Formation template appends a uuid to the workflow names in order to avoid resource conflicts when users deploy this project multiple times in the same region.
         // Get the uuid used for workflow resource names.
         // We use this uuid in videoWorkflowConfig() and imageWorkflowConfig in order to
         // reference the correct workflow and stage names.

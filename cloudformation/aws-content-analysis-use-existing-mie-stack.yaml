@@ -62,10 +62,10 @@ Resources:
           - "/aws-content-analysis-auth.template"
       Parameters:
         AdminEmail: !Ref AdminEmail
-        WorkflowAPIRestID:
+        WorkflowApiId:
           Fn::ImportValue:
             !Sub "${MieStackName}:WorkflowApiId"
-        DataplaneAPIRestID:
+        DataplaneApiId:
           Fn::ImportValue:
             !Sub "${MieStackName}:DataplaneApiId"
         ElasticDomainArn: !GetAtt ContentAnalysisElasticsearchStack.Outputs.DomainArn
