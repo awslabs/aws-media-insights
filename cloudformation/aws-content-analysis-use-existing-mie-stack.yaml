@@ -45,6 +45,7 @@ Resources:
         MieDataplaneBucket:
           Fn::ImportValue:
             !Sub "${MieStackName}:DataplaneBucket"
+        NodeType: !Ref ElasticSearchNodeSize
 
   # Deploy Auth stack
 

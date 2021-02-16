@@ -82,6 +82,7 @@ Resources:
       Parameters:
         AnalyticsStreamArn: !GetAtt MieStack.Outputs.AnalyticsStreamArn
         MieDataplaneBucket: !GetAtt MieStack.Outputs.DataplaneBucket
+        NodeType: !Ref ElasticSearchNodeSize
 
   # Deploy Auth stack
 
