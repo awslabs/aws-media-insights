@@ -106,8 +106,8 @@ Resources:
           - "/aws-content-analysis-auth.template"
       Parameters:
         AdminEmail: !Ref AdminEmail
-        WorkflowAPIRestID: !GetAtt MieStack.Outputs.WorkflowApiRestID
-        DataplaneAPIRestID: !GetAtt MieStack.Outputs.DataplaneApiRestID
+        WorkflowApiId: !GetAtt MieStack.Outputs.WorkflowApiRestID
+        DataplaneApiId: !GetAtt MieStack.Outputs.DataplaneApiRestID
         ElasticDomainArn: !GetAtt ContentAnalysisElasticsearchStack.Outputs.DomainArn
         DataplaneBucket: !GetAtt MieStack.Outputs.DataplaneBucket
 
