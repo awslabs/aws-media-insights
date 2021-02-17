@@ -17,11 +17,15 @@ Parameters:
       - "c4.xlarge.elasticsearch"
       - "r4.large.elasticsearch"
       - "r4.xlarge.elasticsearch"
+  ShortUUID:
+    Description: Uuid to use for uniquely naming step functions in  workflows
+    Type: String
+    Default: "0"
 
 Mappings:
   MediaInsightsEngine:
     Release:
-      Version: "v2.0.2"
+      Version: "v2.0.3"
   ContentAnalysisApp:
     SourceCode:
       S3Bucket: "%%BUCKET_NAME%%"
@@ -78,6 +82,7 @@ Resources:
       Parameters:
         AnalyticsStreamArn: !GetAtt MieStack.Outputs.AnalyticsStreamArn
         MieDataplaneBucket: !GetAtt MieStack.Outputs.DataplaneBucket
+        NodeType: !Ref ElasticSearchNodeSize
 
   # Deploy Auth stack
 
@@ -101,14 +106,13 @@ Resources:
           - "/aws-content-analysis-auth.template"
       Parameters:
         AdminEmail: !Ref AdminEmail
-        WorkflowAPIRestID: !GetAtt MieStack.Outputs.WorkflowApiRestID
-        DataplaneAPIRestID: !GetAtt MieStack.Outputs.DataplaneApiRestID
+        WorkflowApiId: !GetAtt MieStack.Outputs.WorkflowApiRestID
+        DataplaneApiId: !GetAtt MieStack.Outputs.DataplaneApiRestID
         ElasticDomainArn: !GetAtt ContentAnalysisElasticsearchStack.Outputs.DomainArn
         DataplaneBucket: !GetAtt MieStack.Outputs.DataplaneBucket
 
   ContentAnalysisWebStack:
     Type: "AWS::CloudFormation::Stack"
-    DependsOn: StringFunctions
     Properties:
       TemplateURL: !Join
         - ""
@@ -133,6 +137,7 @@ Resources:
         UserPoolId: !GetAtt ContentAnalysisAuthStack.Outputs.UserPoolId
         IdentityPoolId: !GetAtt ContentAnalysisAuthStack.Outputs.IdentityPoolId
         PoolClientId: !GetAtt ContentAnalysisAuthStack.Outputs.UserPoolClientId
+        ShortUUID: !Ref ShortUUID
 
   # Deploy video workflow
 
@@ -163,6 +168,7 @@ Resources:
           Fn::GetAtt:
             - MieStack
             - Outputs.OperatorLibraryStack
+        ShortUUID: !Ref ShortUUID
 
   # Deploy image workflow
 
@@ -193,27 +199,7 @@ Resources:
           Fn::GetAtt:
             - MieStack
             - Outputs.OperatorLibraryStack
-
-  # Custom resources
-
-  StringFunctions:
-    Type: "AWS::CloudFormation::Stack"
-    Properties:
-      TemplateURL: !Join
-        - ""
-        - - "https://"
-          - !FindInMap
-            - ContentAnalysisApp
-            - SourceCode
-            - S3Bucket
-          - ".s3."
-          - !Ref AWS::Region
-          - ".amazonaws.com/"
-          - !FindInMap
-            - ContentAnalysisApp
-            - SourceCode
-            - TemplateKeyPrefix
-          - "/string.template"
+        ShortUUID: !Ref ShortUUID
 
 Outputs:
   ContentAnalyisSolution:

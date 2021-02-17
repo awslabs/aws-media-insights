@@ -90,14 +90,15 @@ echo "--------------------------------------------------------------------------
 
 echo "Preparing template files:"
 
-cp "$template_dir/aws-content-analysis-deploy-mie.yaml" "$dist_dir/aws-content-analysis-deploy-mie.template"
 cp "$template_dir/aws-content-analysis.yaml" "$dist_dir/aws-content-analysis.template"
 cp "$template_dir/aws-content-analysis-elasticsearch.yaml" "$dist_dir/aws-content-analysis-elasticsearch.template"
 cp "$template_dir/aws-content-analysis-auth.yaml" "$dist_dir/aws-content-analysis-auth.template"
 cp "$template_dir/aws-content-analysis-web.yaml" "$dist_dir/aws-content-analysis-web.template"
 cp "$template_dir/aws-content-analysis-video-workflow.yaml" "$dist_dir/aws-content-analysis-video-workflow.template"
 cp "$template_dir/aws-content-analysis-image-workflow.yaml" "$dist_dir/aws-content-analysis-image-workflow.template"
-
+cp "$template_dir/aws-content-analysis-image-workflow.yaml" "$dist_dir/aws-content-analysis-image-workflow.template"
+cp "$template_dir/aws-content-analysis-use-existing-mie-stack.yaml" "$dist_dir/aws-content-analysis-use-existing-mie-stack.template"
+cp "$template_dir/aws-content-analysis-create-new-mie-stack.yaml" "$dist_dir/aws-content-analysis-create-new-mie-stack.template"
 cp "$template_dir/string.yaml" "$dist_dir/string.template"
 
 
@@ -110,8 +111,8 @@ new_bucket="s/%%BUCKET_NAME%%/$bucket/g"
 new_version="s/%%VERSION%%/$version/g"
 
 # Update templates in place. Copy originals to [filename].orig
-sed -i.orig -e "$new_bucket" "$dist_dir/aws-content-analysis-deploy-mie.template"
-sed -i.orig -e "$new_version" "$dist_dir/aws-content-analysis-deploy-mie.template"
+sed -i.orig -e "$new_bucket" "$dist_dir/aws-content-analysis-create-new-mie-stack.template"
+sed -i.orig -e "$new_version" "$dist_dir/aws-content-analysis-create-new-mie-stack.template"
 
 sed -i.orig -e "$new_bucket" "$dist_dir/aws-content-analysis.template"
 sed -i.orig -e "$new_version" "$dist_dir/aws-content-analysis.template"
@@ -227,7 +228,7 @@ echo ""
 echo "With existing MIE deployment:"
 echo "TEMPLATE='"https://"$bucket".s3."$region".amazonaws.com/content-analysis-solution/"$version"/cf/aws-content-analysis.template"'"
 echo "Without existing MIE deployment:"
-echo "TEMPLATE='"https://"$bucket".s3."$region".amazonaws.com/content-analysis-solution/"$version"/cf/aws-content-analysis-deploy-mie.template"'"
+echo "TEMPLATE='"https://"$bucket".s3."$region".amazonaws.com/content-analysis-solution/"$version"/cf/aws-content-analysis-create-new-mie-stack.template"'"
 
 echo "------------------------------------------------------------------------------"
 echo "Done"
