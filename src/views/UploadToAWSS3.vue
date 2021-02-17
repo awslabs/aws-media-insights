@@ -184,6 +184,7 @@ export default {
   },
   data() {
     return {
+      uuid: "",
       file: null,
       isUploading: null,
       uploadValue: null,
@@ -430,87 +431,136 @@ export default {
         validStatus = false;
       return validStatus;
     },
-    workflowConfig() {
-      return {
-        Name: "CasVideoWorkflow",
-        Configuration: {
-          defaultPrelimVideoStage: {
-            Thumbnail: {
-              ThumbnailPosition: this.thumbnail_position.toString(),
-              Enabled: true
-            },
-            Mediainfo: {
-              Enabled: true
-            }
-          },
-          defaultVideoStage: {
-            faceDetection: {
-              Enabled: this.enabledOperators.includes("faceDetection")
-            },
-            technicalCueDetection: {
-              Enabled: this.enabledOperators.includes("technicalCueDetection")
-            },
-            shotDetection: {
-              Enabled: this.enabledOperators.includes("shotDetection")
-            },
-            celebrityRecognition: {
-              Enabled: this.enabledOperators.includes("celebrityRecognition")
-            },
-            labelDetection: {
-              Enabled: this.enabledOperators.includes("labelDetection")
-            },
-            Mediaconvert: {
-              Enabled: false
-            },
-            contentModeration: {
-              Enabled: this.enabledOperators.includes("contentModeration")
-            },
-            faceSearch: {
-              Enabled: this.enabledOperators.includes("faceSearch"),
-              CollectionId:
-                this.faceCollectionId === ""
+    imageWorkflowConfig() {
+      // Define the image workflow based on user specified options for workflow configuration.
+      const ValidationStage = {
+        MediainfoImage: {
+          Enabled: true
+        }
+      }
+      const RekognitionStage = {
+        faceSearchImage: {
+          Enabled: this.enabledOperators.includes("faceSearch"),
+          CollectionId:
+              this.faceCollectionId === ""
                   ? "undefined"
                   : this.faceCollectionId
-            },
-            textDetection: {
-              Enabled: this.enabledOperators.includes("textDetection")
-            },
-            GenericDataLookup: {
-              Enabled: this.enabledOperators.includes("genericDataLookup"),
-              Bucket: this.DATAPLANE_BUCKET,
-              Key:
-                this.genericDataFilename === ""
+        },
+        labelDetectionImage: {
+          Enabled: this.enabledOperators.includes("labelDetection")
+        },
+        textDetectionImage: {
+          Enabled: this.enabledOperators.includes("textDetection")
+        },
+        celebrityRecognitionImage: {
+          Enabled: this.enabledOperators.includes(
+              "celebrityRecognition"
+          )
+        },
+        contentModerationImage: {
+          Enabled: this.enabledOperators.includes("contentModeration")
+        },
+        faceDetectionImage: {
+          Enabled: this.enabledOperators.includes("faceDetection")
+        }
+      }
+      // Apply the uuid to the stage names to make sure we call the correct workflow resources.
+      const workflow_config = {
+        Name: "CasImageWorkflow-" + this.uuid,
+      }
+      workflow_config["Configuration"] = {}
+      workflow_config["Configuration"]["ValidationStage-"+this.uuid] = ValidationStage
+      workflow_config["Configuration"]["RekognitionStage-"+this.uuid] = RekognitionStage
+      return workflow_config
+    },
+    videoWorkflowConfig() {
+      // Define the video workflow based on user specified options for workflow configuration.
+      const defaultPrelimVideoStage = {
+        Thumbnail: {
+          ThumbnailPosition: this.thumbnail_position.toString(),
+          Enabled: true
+        },
+        Mediainfo: {
+          Enabled: true
+        }
+      }
+      const defaultVideoStage = {
+        faceDetection: {
+          Enabled: this.enabledOperators.includes("faceDetection")
+        },
+        technicalCueDetection: {
+          Enabled: this.enabledOperators.includes("technicalCueDetection")
+        },
+        shotDetection: {
+          Enabled: this.enabledOperators.includes("shotDetection")
+        },
+        celebrityRecognition: {
+          Enabled: this.enabledOperators.includes("celebrityRecognition")
+        },
+        labelDetection: {
+          Enabled: this.enabledOperators.includes("labelDetection")
+        },
+        Mediaconvert: {
+          Enabled: false
+        },
+        contentModeration: {
+          Enabled: this.enabledOperators.includes("contentModeration")
+        },
+        faceSearch: {
+          Enabled: this.enabledOperators.includes("faceSearch"),
+          CollectionId:
+              this.faceCollectionId === ""
+                  ? "undefined"
+                  : this.faceCollectionId
+        },
+        textDetection: {
+          Enabled: this.enabledOperators.includes("textDetection")
+        },
+        GenericDataLookup: {
+          Enabled: this.enabledOperators.includes("genericDataLookup"),
+          Bucket: this.DATAPLANE_BUCKET,
+          Key:
+              this.genericDataFilename === ""
                   ? "undefined"
                   : this.genericDataFilename
-            }
-          },
-          defaultAudioStage: {
-            TranscribeVideo: {
-              Enabled: this.enabledOperators.includes("TranscribeVideo"),
-              TranscribeLanguage: this.transcribeLanguage
-            }
-          },
-          defaultTextStage: {
-            Translate: {
-              Enabled: this.enabledOperators.includes("Translate"),
-              SourceLanguageCode: this.transcribeLanguage.split("-")[0],
-              TargetLanguageCode: this.targetLanguageCode
-            },
-            ComprehendEntities: {
-              Enabled: this.enabledOperators.includes("ComprehendEntities")
-            },
-            ComprehendKeyPhrases: {
-              Enabled: this.enabledOperators.includes("ComprehendKeyPhrases")
-            }
-          },
-          defaultTextSynthesisStage: {
-            // Polly is available in the MIECompleteWorkflow but not used in the front-end, so we've disabled it here.
-            Polly: {
-              Enabled: false
-            }
-          }
         }
-      };
+      }
+      const defaultAudioStage = {
+        TranscribeVideo: {
+          Enabled: this.enabledOperators.includes("TranscribeVideo"),
+          TranscribeLanguage: this.transcribeLanguage
+        }
+      }
+      const defaultTextStage = {
+        Translate: {
+          Enabled: this.enabledOperators.includes("Translate"),
+          SourceLanguageCode: this.transcribeLanguage.split("-")[0],
+          TargetLanguageCode: this.targetLanguageCode
+        },
+        ComprehendEntities: {
+          Enabled: this.enabledOperators.includes("ComprehendEntities")
+        },
+        ComprehendKeyPhrases: {
+          Enabled: this.enabledOperators.includes("ComprehendKeyPhrases")
+        }
+      }
+      const defaultTextSynthesisStage = {
+        // Polly is available in the MIECompleteWorkflow but not used in the front-end, so we've disabled it here.
+        Polly: {
+          Enabled: false
+        }
+      }
+      // Apply the uuid to the stage names to make sure we call the correct workflow resources.
+      const workflow_config = {
+        Name: "CasVideoWorkflow-" + this.uuid,
+      }
+      workflow_config["Configuration"] = {}
+      workflow_config["Configuration"]["defaultPrelimVideoStage-"+this.uuid] = defaultPrelimVideoStage
+      workflow_config["Configuration"]["defaultVideoStage-"+this.uuid] = defaultVideoStage
+      workflow_config["Configuration"]["defaultAudioStage-"+this.uuid] = defaultAudioStage
+      workflow_config["Configuration"]["defaultTextStage-"+this.uuid] = defaultTextStage
+      workflow_config["Configuration"]["defaultTextSynthesisStage-"+this.uuid] = defaultTextSynthesisStage
+      return workflow_config
     }
   },
   created: function() {
@@ -522,7 +572,7 @@ export default {
   mounted: function() {
     this.executed_assets = this.execution_history;
     this.pollWorkflowStatus();
-    //console.log("this.DATAPLANE_BUCKET: " + this.DATAPLANE_BUCKET)
+    this.getWorkflowUuid();
   },
   beforeDestroy() {
     clearInterval(this.workflow_status_polling);
@@ -607,54 +657,14 @@ export default {
         media_type = this.$route.query.mediaType;
         s3Key = this.$route.query.s3key.split("/").pop();
       }
-      let data = {};
+      let workflow_config = {};
       if (this.hasAssetParam) {
         if (media_type === "video") {
-          data = vm.workflowConfig;
-          data["Input"] = { AssetId: this.assetIdParam, Media: { Video: {} } };
+          workflow_config = vm.videoWorkflowConfig;
+          workflow_config["Input"] = { AssetId: this.assetIdParam, Media: { Video: {} } };
         } else if (media_type === "image") {
-          data = {
-            Input: {
-              AssetId: this.assetIdParam,
-              Media: {
-                Image: {}
-              }
-            },
-            Name: "CasImageWorkflow",
-            Configuration: {
-              ValidationStage: {
-                MediainfoImage: {
-                  Enabled: true
-                }
-              },
-              RekognitionStage: {
-                faceSearchImage: {
-                  Enabled: this.enabledOperators.includes("faceSearch"),
-                  CollectionId:
-                    this.faceCollectionId === ""
-                      ? "undefined"
-                      : this.faceCollectionId
-                },
-                labelDetectionImage: {
-                  Enabled: this.enabledOperators.includes("labelDetection")
-                },
-                textDetectionImage: {
-                  Enabled: this.enabledOperators.includes("textDetection")
-                },
-                celebrityRecognitionImage: {
-                  Enabled: this.enabledOperators.includes(
-                    "celebrityRecognition"
-                  )
-                },
-                contentModerationImage: {
-                  Enabled: this.enabledOperators.includes("contentModeration")
-                },
-                faceDetectionImage: {
-                  Enabled: this.enabledOperators.includes("faceDetection")
-                }
-              }
-            }
-          };
+          workflow_config = vm.imageWorkflowConfig;
+          workflow_config["Input"] = { AssetId: this.assetIdParam, Media: { Image: {} } };
         } else {
           vm.s3UploadError(
             "Unsupported media type, " + this.$route.query.mediaType + "."
@@ -662,50 +672,15 @@ export default {
         }
       } else {
         if (media_type.match(/image/g)) {
-          data = {
-            Name: "CasImageWorkflow",
-            Configuration: {
-              ValidationStage: {
-                MediainfoImage: {
-                  Enabled: true
-                }
-              },
-              RekognitionStage: {
-                faceSearchImage: {
-                  Enabled: this.enabledOperators.includes("faceSearch"),
-                  CollectionId:
-                    this.faceCollectionId === ""
-                      ? "undefined"
-                      : this.faceCollectionId
-                },
-                labelDetectionImage: {
-                  Enabled: this.enabledOperators.includes("labelDetection")
-                },
-                textDetectionImage: {
-                  Enabled: this.enabledOperators.includes("textDetection")
-                },
-                celebrityRecognitionImage: {
-                  Enabled: this.enabledOperators.includes(
-                    "celebrityRecognition"
-                  )
-                },
-                contentModerationImage: {
-                  Enabled: this.enabledOperators.includes("contentModeration")
-                },
-                faceDetectionImage: {
-                  Enabled: this.enabledOperators.includes("faceDetection")
-                }
-              }
-            },
-            Input: {
-              Media: {
-                Image: {
-                  S3Bucket: this.DATAPLANE_BUCKET,
-                  S3Key: s3Key
-                }
+          workflow_config = vm.imageWorkflowConfig;
+          workflow_config["Input"] = {
+            Media: {
+              Image: {
+                S3Bucket: this.DATAPLANE_BUCKET,
+                S3Key: s3Key
               }
             }
-          };
+          }
         } else if (
           media_type.match(/video/g) ||
           this.valid_media_types.includes(
@@ -715,8 +690,8 @@ export default {
               .toLowerCase()
           )
         ) {
-          data = vm.workflowConfig;
-          data["Input"] = {
+          workflow_config = vm.videoWorkflowConfig;
+          workflow_config["Input"] = {
             Media: {
               Video: {
                 S3Bucket: this.DATAPLANE_BUCKET,
@@ -736,7 +711,8 @@ export default {
       //console.log(JSON.stringify(data));
 
       // TODO: Should this be its own function?
-
+      console.log("workflow execution:")
+      console.log(workflow_config)
       let apiName = 'mieWorkflowApi'
       let path = 'workflow/execution'
       let requestOpts = {
@@ -744,7 +720,7 @@ export default {
             'Content-Type': 'application/json'
           },
           response: true,
-          body: data,
+          body: workflow_config,
           queryStringParameters: {} // optional
       };
       try {
@@ -767,6 +743,27 @@ export default {
         alert(
           "ERROR: Failed to start workflow. Check Workflow API logs."
         );
+        console.log(error)
+      }
+    },
+    async getWorkflowUuid() {
+      let apiName = 'mieWorkflowApi'
+      let path =  "workflow/"
+      let requestOpts = {
+        headers: {},
+        response: true,
+        queryStringParameters: {} // optional
+      };
+      try {
+        // Get the default configurations for every defined workflow:
+        let response = await this.$Amplify.API.get(apiName, path, requestOpts);
+        // The aws-content-analysis-use-existing-mie-stack.yaml Cloud Formation template appends a uuid to the workflow names in order to avoid resource conflicts when users deploy this project multiple times in the same region.
+        // Get the uuid used for workflow resource names.
+        // We use this uuid in videoWorkflowConfig() and imageWorkflowConfig in order to
+        // reference the correct workflow and stage names.
+        this.uuid = response.data.filter(x => x.Name.startsWith('CasVideoWorkflow'))[0].Name.split('-')[1]
+      } catch (error) {
+        alert("ERROR: Failed to get workflow status");
         console.log(error)
       }
     },
