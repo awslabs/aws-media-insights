@@ -1,4 +1,4 @@
-AWSTemplateFormatVersion: '2010-09-09'
+AWSTemplateFormatVersion: "2010-09-09"
 Description: "AWS Content Analysis Workflow - Workflow to run image analyses"
 
 Parameters:
@@ -44,7 +44,6 @@ Resources:
         - Fn::ImportValue:
             Fn::Sub: "${OperatorLibraryStack}:PersonTracking"
 
-
   # Face search operation requires a custom input without any pre-existing default so it has a prerequiste step to create a collection
   # to search against.  This workflow should run without any pre-requisite step.
   RekognitionVideoNoFaceSearchStage:
@@ -84,6 +83,8 @@ Resources:
             Fn::Sub: "${OperatorLibraryStack}:LabelDetectionImage"
         - Fn::ImportValue:
             Fn::Sub: "${OperatorLibraryStack}:TextDetectionImage"
+        - Fn::ImportValue:
+            Fn::Sub: "${OperatorLibraryStack}:CustomLabels"
 
   # Face search operation requires a custom input without any pre-existing default so it has a prerequiste step to create a collection
   # to search against.  This workflow should run without any pre-requisite step.
@@ -128,6 +129,6 @@ Resources:
               }
           }
         - {
-          ValidationStage: !GetAtt ValidationStage.Name,
-          rekognitionSuite: !GetAtt RekognitionStage.Name
-        }
+            ValidationStage: !GetAtt ValidationStage.Name,
+            rekognitionSuite: !GetAtt RekognitionStage.Name,
+          }
