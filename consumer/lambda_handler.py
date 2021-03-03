@@ -14,7 +14,7 @@ dataplane_bucket = os.environ['DataplaneBucket']
 s3 = boto3.client('s3')
 
 # These names are the lowercase version of OPERATOR_NAME defined in /source/operators/operator-library.yaml
-supported_operators = ["textdetection", "mediainfo", "transcribeaudio", "transcribevideo", "translate", "genericdatalookup", "labeldetection", "celebrityrecognition", "facesearch", "contentmoderation", "facedetection", "key_phrases", "entities", "shotdetection", "technicalcuedetection"]
+supported_operators = ["textdetection", "mediainfo", "transcribeaudio", "transcribevideo", "translate", "genericdatalookup", "labeldetection", "customlabels", "celebrityrecognition", "facesearch", "contentmoderation", "facedetection", "key_phrases", "entities", "shotdetection", "technicalcuedetection"]
 
 
 def normalize_confidence(confidence_value):
@@ -519,6 +519,18 @@ def process_label_detection(asset, workflow, results):
                     print("Item: " + json.dumps(item))
     bulk_index(es, asset, "labels", extracted_items)
 
+def process_custom_labels(asset, workflow, results):
+# Custom Labels only supports images right now, so this will need to be updated if that changees in the future.
+    metadata = json.loads(results)
+    es = connect_es(es_endpoint)
+    extracted_items = []
+    
+    if "CustomLabels" in metadata:
+        for item in metadata["CustomLabels"]:
+            item["Operator"] = "custom_labels"
+            item["Workflow"] = workflow
+            extracted_items.append(item)
+    bulk_index(es, asset, "custom_labels", extracted_items)
 
 def process_technical_cue_detection(asset, workflow, results):
     metadata = json.loads(results)
@@ -931,6 +943,8 @@ def lambda_handler(event, context):
                             process_shot_detection(asset_id, workflow, metadata["Results"])
                         if operator == "technicalcuedetection":
                             process_technical_cue_detection(asset_id, workflow, metadata["Results"])
+                        if operator == "customlabels":
+                            process_custom_labels(asset_id, workflow, metadata["Results"])
                     else:
                         print("We do not store {operator} results".format(operator=operator))
                 else:
