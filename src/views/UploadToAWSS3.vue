@@ -11,16 +11,13 @@
           :show="dismissCountDown"
           dismissible
           variant="danger"
-          @dismissed="dismissCountDown=0"
+          @dismissed="dismissCountDown = 0"
           @dismiss-count-down="countDownChanged"
         >
           {{ uploadErrorMessage }}
         </b-alert>
-        <b-alert
-          :show="showInvalidFile"
-          variant="danger"
-        >
-          {{ invalidFileMessages[invalidFileMessages.length-1] }}
+        <b-alert :show="showInvalidFile" variant="danger">
+          {{ invalidFileMessages[invalidFileMessages.length - 1] }}
         </b-alert>
         <h1>Upload Content</h1>
         <b-form-file
@@ -28,8 +25,7 @@
           size="lg"
           placeholder="Choose a file or drop it here..."
           drop-placeholder="Drop file here..."
-        >
-        </b-form-file>
+        ></b-form-file>
       </div>
       <br />
       <b-container v-if="isUploading">
@@ -55,11 +51,7 @@
             <b-button v-b-toggle.collapse-2 class="m-1">
               Configure Workflow
             </b-button>
-            <b-button
-              v-if="validForm"
-              variant="primary"
-              @click="uploadFiles"
-            >
+            <b-button v-if="validForm" variant="primary" @click="uploadFiles">
               Start Workflow
             </b-button>
             <b-button v-else disabled variant="primary">
@@ -81,21 +73,43 @@
                   name="flavour-1"
                 ></b-form-checkbox-group>
                 <label>Thumbnail position:</label>
-                <b-form-input v-model="thumbnail_position" type="range" min="1" max="20" step="1"></b-form-input>
+                <b-form-input
+                  v-model="thumbnail_position"
+                  type="range"
+                  min="1"
+                  max="20"
+                  step="1"
+                ></b-form-input>
                 {{ thumbnail_position }} sec
+                <label
+                  v-if="enabledOperators.includes('faceSearch')"
+                  for="Enter face collection id"
+                >
+                  Face Collection ID:
+                </label>
                 <b-form-input
                   v-if="enabledOperators.includes('faceSearch')"
                   id="Enter face collection id"
                   v-model="faceCollectionId"
                 ></b-form-input>
-
+                <label
+                  v-if="enabledOperators.includes('customLabels')"
+                  for="Enter the Custom Labels Project Version ARN"
+                >
+                  Custom Labels Project Version ARN:
+                </label>
+                <b-form-input
+                  v-if="enabledOperators.includes('customLabels')"
+                  id="Enter the Custom Labels Project Version ARN"
+                  v-model="customLabelsARN"
+                ></b-form-input>
                 <b-form-input
                   v-if="enabledOperators.includes('genericDataLookup')"
                   v-model="genericDataFilename"
                   placeholder="Enter data filename"
                 ></b-form-input>
               </b-form-group>
-              <div v-if="videoFormError" style="color:red">
+              <div v-if="videoFormError" style="color: red">
                 {{ videoFormError }}
               </div>
             </b-card>
@@ -109,10 +123,13 @@
                 ></b-form-checkbox-group>
                 <div v-if="enabledOperators.includes('TranscribeVideo')">
                   <label>Source Language</label>
-                  <b-form-select v-model="transcribeLanguage" :options="transcribeLanguages"></b-form-select>
+                  <b-form-select
+                    v-model="transcribeLanguage"
+                    :options="transcribeLanguages"
+                  ></b-form-select>
                 </div>
               </b-form-group>
-              <div v-if="audioFormError" style="color:red">
+              <div v-if="audioFormError" style="color: red">
                 {{ audioFormError }}
               </div>
             </b-card>
@@ -126,12 +143,18 @@
                 ></b-form-checkbox-group>
                 <div v-if="enabledOperators.includes('Translate')">
                   <label>Translation Source Language</label>
-                  <b-form-select v-model="transcribeLanguage" :options="transcribeLanguages"></b-form-select>
+                  <b-form-select
+                    v-model="transcribeLanguage"
+                    :options="transcribeLanguages"
+                  ></b-form-select>
                   <label>Translation Target Language</label>
-                  <b-form-select v-model="targetLanguageCode" :options="translateLanguages"></b-form-select>
+                  <b-form-select
+                    v-model="targetLanguageCode"
+                    :options="translateLanguages"
+                  ></b-form-select>
                 </div>
               </b-form-group>
-              <div v-if="textFormError" style="color:red">
+              <div v-if="textFormError" style="color: red">
                 {{ textFormError }}
               </div>
             </b-card>
@@ -160,16 +183,21 @@
         :items="executed_assets"
       >
         <template v-slot:cell(workflow_status)="data">
-          <a v-if="data.item.workflow_status !== 'Queued'"
+          <a
+            v-if="data.item.workflow_status !== 'Queued'"
             href
-            @click.stop.prevent="openWindow(data.item.state_machine_console_link)"
-          >{{ data.item.workflow_status }}</a>
-          <div v-if="data.item.workflow_status === 'Queued'">{{ data.item.workflow_status }}</div>
+            @click.stop.prevent="
+              openWindow(data.item.state_machine_console_link)
+            "
+          >
+            {{ data.item.workflow_status }}
+          </a>
+          <div v-if="data.item.workflow_status === 'Queued'">
+            {{ data.item.workflow_status }}
+          </div>
         </template>
       </b-table>
-      <b-button size="sm" @click="clearHistory">
-        Clear History
-      </b-button>
+      <b-button size="sm" @click="clearHistory">Clear History</b-button>
     </b-container>
   </div>
 </template>
@@ -180,7 +208,7 @@ import { mapState } from "vuex";
 
 export default {
   components: {
-    Header
+    Header,
   },
   data() {
     return {
@@ -203,27 +231,27 @@ export default {
         "mpeg-2",
         "avi",
         "mkv",
-        "webm"
+        "webm",
       ], // see https://docs.aws.amazon.com/mediaconvert/latest/ug/reference-codecs-containers.html
       fields: [
         {
           asset_id: {
             label: "Asset Id",
-            sortable: false
-          }
+            sortable: false,
+          },
         },
         {
           file_name: {
             label: "File Name",
-            sortable: false
-          }
+            sortable: false,
+          },
         },
         {
           workflow_status: {
             label: "Workflow Status",
-            sortable: false
-          }
-        }
+            sortable: false,
+          },
+        },
       ],
       thumbnail_position: 10,
       hasAssetParam: false,
@@ -240,7 +268,7 @@ export default {
         "ComprehendKeyPhrases",
         "ComprehendEntities",
         "shotDetection",
-        "technicalCueDetection"
+        "technicalCueDetection",
       ],
       videoOperators: [
         { text: "Object Detection", value: "labelDetection" },
@@ -251,15 +279,20 @@ export default {
         { text: "Face Detection", value: "faceDetection" },
         { text: "Word Detection", value: "textDetection" },
         { text: "Face Search", value: "faceSearch" },
-        { text: "Generic Data Lookup (video only)", value: "genericDataLookup" }
+        { text: "Custom Labels (image only)", value: "customLabels" },
+        {
+          text: "Generic Data Lookup (video only)",
+          value: "genericDataLookup",
+        },
       ],
       audioOperators: [{ text: "Transcribe", value: "TranscribeVideo" }],
       textOperators: [
         { text: "Comprehend Key Phrases", value: "ComprehendKeyPhrases" },
         { text: "Comprehend Entities", value: "ComprehendEntities" },
-        { text: "Translate", value: "Translate" }
+        { text: "Translate", value: "Translate" },
       ],
       faceCollectionId: "",
+      customLabelsARN: "",
       genericDataFilename: "",
       transcribeLanguage: "en-US",
       transcribeLanguages: [
@@ -295,7 +328,7 @@ export default {
         { text: "Tamil", value: "ta-IN" },
         // Disabled until 'te' supported by AWS Translate
         // {text: 'Telugu', value: 'te-IN'},
-        { text: "Turkish", value: "tr-TR" }
+        { text: "Turkish", value: "tr-TR" },
       ],
       translateLanguages: [
         { text: "Afrikaans", value: "af" },
@@ -352,7 +385,7 @@ export default {
         { text: "Turkish", value: "tr" },
         { text: "Ukrainian", value: "uk" },
         { text: "Urdu", value: "ur" },
-        { text: "Vietnamese", value: "vi" }
+        { text: "Vietnamese", value: "vi" },
       ],
       sourceLanguageCode: "en",
       targetLanguageCode: "es",
@@ -403,6 +436,13 @@ export default {
           return "Face collection name must have fewer than 255 characters.";
         }
       }
+      // TODO: Find more ways to validate the ARN, possibly a regex like above.
+      if (this.enabledOperators.includes("customLabels")) {
+        // Validate that the collection ID is defined
+        if (this.customLabelsARN === "") {
+          return "Custom Labels Project Version ARN is required.";
+        }
+      }
       if (this.enabledOperators.includes("genericDataLookup")) {
         // Validate that the collection ID is defined
         if (this.genericDataFilename === "") {
@@ -437,43 +477,43 @@ export default {
           defaultPrelimVideoStage: {
             Thumbnail: {
               ThumbnailPosition: this.thumbnail_position.toString(),
-              Enabled: true
+              Enabled: true,
             },
             Mediainfo: {
-              Enabled: true
-            }
+              Enabled: true,
+            },
           },
           defaultVideoStage: {
             faceDetection: {
-              Enabled: this.enabledOperators.includes("faceDetection")
+              Enabled: this.enabledOperators.includes("faceDetection"),
             },
             technicalCueDetection: {
-              Enabled: this.enabledOperators.includes("technicalCueDetection")
+              Enabled: this.enabledOperators.includes("technicalCueDetection"),
             },
             shotDetection: {
-              Enabled: this.enabledOperators.includes("shotDetection")
+              Enabled: this.enabledOperators.includes("shotDetection"),
             },
             celebrityRecognition: {
-              Enabled: this.enabledOperators.includes("celebrityRecognition")
+              Enabled: this.enabledOperators.includes("celebrityRecognition"),
             },
             labelDetection: {
-              Enabled: this.enabledOperators.includes("labelDetection")
+              Enabled: this.enabledOperators.includes("labelDetection"),
             },
             Mediaconvert: {
-              Enabled: false
+              Enabled: false,
             },
             contentModeration: {
-              Enabled: this.enabledOperators.includes("contentModeration")
+              Enabled: this.enabledOperators.includes("contentModeration"),
             },
             faceSearch: {
               Enabled: this.enabledOperators.includes("faceSearch"),
               CollectionId:
                 this.faceCollectionId === ""
                   ? "undefined"
-                  : this.faceCollectionId
+                  : this.faceCollectionId,
             },
             textDetection: {
-              Enabled: this.enabledOperators.includes("textDetection")
+              Enabled: this.enabledOperators.includes("textDetection"),
             },
             GenericDataLookup: {
               Enabled: this.enabledOperators.includes("genericDataLookup"),
@@ -481,45 +521,45 @@ export default {
               Key:
                 this.genericDataFilename === ""
                   ? "undefined"
-                  : this.genericDataFilename
-            }
+                  : this.genericDataFilename,
+            },
           },
           defaultAudioStage: {
             TranscribeVideo: {
               Enabled: this.enabledOperators.includes("TranscribeVideo"),
-              TranscribeLanguage: this.transcribeLanguage
-            }
+              TranscribeLanguage: this.transcribeLanguage,
+            },
           },
           defaultTextStage: {
             Translate: {
               Enabled: this.enabledOperators.includes("Translate"),
               SourceLanguageCode: this.transcribeLanguage.split("-")[0],
-              TargetLanguageCode: this.targetLanguageCode
+              TargetLanguageCode: this.targetLanguageCode,
             },
             ComprehendEntities: {
-              Enabled: this.enabledOperators.includes("ComprehendEntities")
+              Enabled: this.enabledOperators.includes("ComprehendEntities"),
             },
             ComprehendKeyPhrases: {
-              Enabled: this.enabledOperators.includes("ComprehendKeyPhrases")
-            }
+              Enabled: this.enabledOperators.includes("ComprehendKeyPhrases"),
+            },
           },
           defaultTextSynthesisStage: {
             // Polly is available in the MIECompleteWorkflow but not used in the front-end, so we've disabled it here.
             Polly: {
-              Enabled: false
-            }
-          }
-        }
+              Enabled: false,
+            },
+          },
+        },
       };
-    }
+    },
   },
-  created: function() {
+  created: function () {
     if (this.$route.query.asset) {
       this.hasAssetParam = true;
       this.assetIdParam = this.$route.query.asset;
     }
   },
-  mounted: function() {
+  mounted: function () {
     this.executed_assets = this.execution_history;
     this.pollWorkflowStatus();
     //console.log("this.DATAPLANE_BUCKET: " + this.DATAPLANE_BUCKET)
@@ -528,7 +568,7 @@ export default {
     clearInterval(this.workflow_status_polling);
   },
   methods: {
-    selectAll: function() {
+    selectAll: function () {
       this.enabledOperators = [
         "labelDetection",
         "textDetection",
@@ -541,14 +581,14 @@ export default {
         "ComprehendKeyPhrases",
         "ComprehendEntities",
         "technicalCueDetection",
-        "shotDetection"
+        "shotDetection",
       ];
-      console.log(this.enabledOperators)
+      console.log(this.enabledOperators);
     },
-    clearAll: function() {
+    clearAll: function () {
       this.enabledOperators = [];
     },
-    openWindow: function(url) {
+    openWindow: function (url) {
       window.open(url);
     },
     countDownChanged(dismissCountDown) {
@@ -596,13 +636,13 @@ export default {
     //   if (this.invalidFileMessages.length === 0) this.showInvalidFile = false;
     // },
 
-    runWorkflow: async function(location) {
+    runWorkflow: async function (location) {
       const vm = this;
       let media_type = null;
       let s3Key = null;
       if ("key" in location) {
         media_type = location.type;
-        s3Key = 'public/' + location.key; // add in public since amplify prepends that to all keys
+        s3Key = "public/" + location.key; // add in public since amplify prepends that to all keys
       } else {
         media_type = this.$route.query.mediaType;
         s3Key = this.$route.query.s3key.split("/").pop();
@@ -617,15 +657,15 @@ export default {
             Input: {
               AssetId: this.assetIdParam,
               Media: {
-                Image: {}
-              }
+                Image: {},
+              },
             },
             Name: "CasImageWorkflow",
             Configuration: {
               ValidationStage: {
                 MediainfoImage: {
-                  Enabled: true
-                }
+                  Enabled: true,
+                },
               },
               RekognitionStage: {
                 faceSearchImage: {
@@ -633,27 +673,34 @@ export default {
                   CollectionId:
                     this.faceCollectionId === ""
                       ? "undefined"
-                      : this.faceCollectionId
+                      : this.faceCollectionId,
+                },
+                customLabels: {
+                  Enabled: this.enabledOperators.includes("customLabels"),
+                  ProjectVersionARN:
+                    this.customLabelsARN === ""
+                      ? "undefined"
+                      : this.customLabelsARN,
                 },
                 labelDetectionImage: {
-                  Enabled: this.enabledOperators.includes("labelDetection")
+                  Enabled: this.enabledOperators.includes("labelDetection"),
                 },
                 textDetectionImage: {
-                  Enabled: this.enabledOperators.includes("textDetection")
+                  Enabled: this.enabledOperators.includes("textDetection"),
                 },
                 celebrityRecognitionImage: {
                   Enabled: this.enabledOperators.includes(
                     "celebrityRecognition"
-                  )
+                  ),
                 },
                 contentModerationImage: {
-                  Enabled: this.enabledOperators.includes("contentModeration")
+                  Enabled: this.enabledOperators.includes("contentModeration"),
                 },
                 faceDetectionImage: {
-                  Enabled: this.enabledOperators.includes("faceDetection")
-                }
-              }
-            }
+                  Enabled: this.enabledOperators.includes("faceDetection"),
+                },
+              },
+            },
           };
         } else {
           vm.s3UploadError(
@@ -667,8 +714,8 @@ export default {
             Configuration: {
               ValidationStage: {
                 MediainfoImage: {
-                  Enabled: true
-                }
+                  Enabled: true,
+                },
               },
               RekognitionStage: {
                 faceSearchImage: {
@@ -676,53 +723,55 @@ export default {
                   CollectionId:
                     this.faceCollectionId === ""
                       ? "undefined"
-                      : this.faceCollectionId
+                      : this.faceCollectionId,
+                },
+                customLabels: {
+                  Enabled: this.enabledOperators.includes("customLabels"),
+                  ProjectVersionARN:
+                    this.customLabelsARN === ""
+                      ? "undefined"
+                      : this.customLabelsARN,
                 },
                 labelDetectionImage: {
-                  Enabled: this.enabledOperators.includes("labelDetection")
+                  Enabled: this.enabledOperators.includes("labelDetection"),
                 },
                 textDetectionImage: {
-                  Enabled: this.enabledOperators.includes("textDetection")
+                  Enabled: this.enabledOperators.includes("textDetection"),
                 },
                 celebrityRecognitionImage: {
                   Enabled: this.enabledOperators.includes(
                     "celebrityRecognition"
-                  )
+                  ),
                 },
                 contentModerationImage: {
-                  Enabled: this.enabledOperators.includes("contentModeration")
+                  Enabled: this.enabledOperators.includes("contentModeration"),
                 },
                 faceDetectionImage: {
-                  Enabled: this.enabledOperators.includes("faceDetection")
-                }
-              }
+                  Enabled: this.enabledOperators.includes("faceDetection"),
+                },
+              },
             },
             Input: {
               Media: {
                 Image: {
                   S3Bucket: this.DATAPLANE_BUCKET,
-                  S3Key: s3Key
-                }
-              }
-            }
+                  S3Key: s3Key,
+                },
+              },
+            },
           };
         } else if (
           media_type.match(/video/g) ||
-          this.valid_media_types.includes(
-            s3key
-              .split(".")
-              .pop()
-              .toLowerCase()
-          )
+          this.valid_media_types.includes(s3key.split(".").pop().toLowerCase())
         ) {
           data = vm.workflowConfig;
           data["Input"] = {
             Media: {
               Video: {
                 S3Bucket: this.DATAPLANE_BUCKET,
-                S3Key: s3Key
-              }
-            }
+                S3Key: s3Key,
+              },
+            },
           };
         } else if (media_type === "application/json") {
           // JSON files may be uploaded for the genericDataLookup operator, but
@@ -737,15 +786,15 @@ export default {
 
       // TODO: Should this be its own function?
 
-      let apiName = 'mieWorkflowApi'
-      let path = 'workflow/execution'
+      let apiName = "mieWorkflowApi";
+      let path = "workflow/execution";
       let requestOpts = {
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          response: true,
-          body: data,
-          queryStringParameters: {} // optional
+        headers: {
+          "Content-Type": "application/json",
+        },
+        response: true,
+        body: data,
+        queryStringParameters: {}, // optional
       };
       try {
         let response = await this.$Amplify.API.post(apiName, path, requestOpts);
@@ -753,31 +802,29 @@ export default {
         let wf_id = response.data.Id;
         //console.log("Media assigned asset id: " + asset_id);
         let executed_asset = {
-            asset_id: asset_id,
-            file_name: s3Key,
-            workflow_status: "",
-            state_machine_console_link: "",
-            wf_id: wf_id
-          };
+          asset_id: asset_id,
+          file_name: s3Key,
+          workflow_status: "",
+          state_machine_console_link: "",
+          wf_id: wf_id,
+        };
         vm.executed_assets.push(executed_asset);
         vm.getWorkflowStatus(wf_id);
         this.hasAssetParam = false;
         this.assetIdParam = "";
       } catch (error) {
-        alert(
-          "ERROR: Failed to start workflow. Check Workflow API logs."
-        );
-        console.log(error)
+        alert("ERROR: Failed to start workflow. Check Workflow API logs.");
+        console.log(error);
       }
     },
     async getWorkflowStatus(wf_id) {
       const vm = this;
-      let apiName = 'mieWorkflowApi'
-      let path =  "workflow/execution/" + wf_id
+      let apiName = "mieWorkflowApi";
+      let path = "workflow/execution/" + wf_id;
       let requestOpts = {
         headers: {},
         response: true,
-        queryStringParameters: {} // optional
+        queryStringParameters: {}, // optional
       };
       try {
         let response = await this.$Amplify.API.get(apiName, path, requestOpts);
@@ -785,21 +832,26 @@ export default {
           if (vm.executed_assets[i].wf_id === wf_id) {
             vm.executed_assets[i].workflow_status = response.data.Status;
             vm.executed_assets[i].state_machine_console_link =
-            "https://" + this.AWS_REGION + ".console.aws.amazon.com/states/home?region=" + this.AWS_REGION + "#/executions/details/" + response.data.StateMachineExecutionArn;
+              "https://" +
+              this.AWS_REGION +
+              ".console.aws.amazon.com/states/home?region=" +
+              this.AWS_REGION +
+              "#/executions/details/" +
+              response.data.StateMachineExecutionArn;
             break;
           }
         }
-      this.$store.commit("updateExecutedAssets", vm.executed_assets);
+        this.$store.commit("updateExecutedAssets", vm.executed_assets);
       } catch (error) {
         alert("ERROR: Failed to get workflow status");
-        console.log(error)
+        console.log(error);
       }
     },
     pollWorkflowStatus() {
       // Poll frequency in milliseconds
       const poll_frequency = 5000;
       this.workflow_status_polling = setInterval(() => {
-        this.executed_assets.forEach(item => {
+        this.executed_assets.forEach((item) => {
           if (
             item.workflow_status === "" ||
             item.workflow_status === "Started" ||
@@ -811,38 +863,38 @@ export default {
       }, poll_frequency);
     },
     uploadFiles() {
-      let key = 'upload/' + this.file.name
-      let vm = this // hate this, not sure how to get correct scope inside the progressCallback method
-      console.log('creds', this.$Amplify.Auth.currentSession())
+      let key = "upload/" + this.file.name;
+      let vm = this; // hate this, not sure how to get correct scope inside the progressCallback method
+      console.log("creds", this.$Amplify.Auth.currentSession());
       this.$Amplify.Storage.put(key, this.file, {
-        level: 'public', // not actually public in the S3 sense, this is just an amplify construct
+        level: "public", // not actually public in the S3 sense, this is just an amplify construct
         progressCallback(progress) {
-          vm.isUploading = true
-          vm.uploadValue = 0
-          let uploadedDec = (progress.loaded / progress.total) * 100
-          vm.uploadValue = uploadedDec
+          vm.isUploading = true;
+          vm.uploadValue = 0;
+          let uploadedDec = (progress.loaded / progress.total) * 100;
+          vm.uploadValue = uploadedDec;
         },
-      }).then(function(result) {
-              vm.isUploading = null
-              vm.uploadValue = null
-              let location = result
-              location.type = vm.file.type
-              vm.runWorkflow(location)
-              vm.file = null
-        }
-      ).catch (function(err) {
-          alert(err)
-          vm.isUploading = null
-          vm.uploadValue = null
-          vm.file = null
-
-      });
+      })
+        .then(function (result) {
+          vm.isUploading = null;
+          vm.uploadValue = null;
+          let location = result;
+          location.type = vm.file.type;
+          vm.runWorkflow(location);
+          vm.file = null;
+        })
+        .catch(function (err) {
+          alert(err);
+          vm.isUploading = null;
+          vm.uploadValue = null;
+          vm.file = null;
+        });
     },
     clearHistory() {
       this.executed_assets = [];
       this.$store.commit("updateExecutedAssets", this.executed_assets);
-    }
-  }
+    },
+  },
 };
 </script>
 <style>
