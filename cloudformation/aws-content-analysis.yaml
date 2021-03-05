@@ -1,10 +1,7 @@
 AWSTemplateFormatVersion: "2010-09-09"
-Description: AWS Content Analysis - Deploys the AWS Content Analysis Application
+Description: AWS Content Analysis - Deploys the AWS Content Analysis Application and the required Media Insights Engine Framework
 
 Parameters:
-  MieStackName:
-    Description: Name of the Media Insights Engine framework stack
-    Type: String
   AdminEmail:
     Description: Email address of the Content Analysis Administrator
     Type: String
@@ -22,6 +19,9 @@ Parameters:
       - "r4.xlarge.elasticsearch"
 
 Mappings:
+  MediaInsightsEngine:
+    Release:
+      Version: "v2.0.4"
   ContentAnalysisApp:
     SourceCode:
       S3Bucket: "%%BUCKET_NAME%%"
@@ -30,6 +30,31 @@ Mappings:
       WebsitePrefix: "content-analysis-solution/%%VERSION%%/code/website"
 
 Resources:
+  # Deploy MIE Framework
+
+  MieStack:
+    Type: "AWS::CloudFormation::Stack"
+    Properties:
+      TemplateURL: !Join
+        - ""
+        - - "https://"
+          - "rodeolabz-"
+          - !Ref AWS::Region
+          - ".s3."
+          - !Ref AWS::Region
+          - ".amazonaws.com/"
+          - "media_insights_engine/"
+          - !FindInMap
+            - MediaInsightsEngine
+            - Release
+            - Version
+          - "/media-insights-stack.template"
+      Parameters:
+        DeployAnalyticsPipeline: Yes
+        DeployTestResources: No
+        MaxConcurrentWorkflows: 5
+        EnableXrayTrace: Yes
+
   # Deploy Elasticsearch
 
   ContentAnalysisElasticsearchStack:
@@ -42,7 +67,7 @@ Resources:
             - ContentAnalysisApp
             - SourceCode
             - S3Bucket
-          - .s3.
+          - ".s3."
           - !Ref AWS::Region
           - ".amazonaws.com/"
           - !FindInMap
@@ -51,12 +76,9 @@ Resources:
             - TemplateKeyPrefix
           - "/aws-content-analysis-elasticsearch.template"
       Parameters:
-        AnalyticsStreamArn:
-          Fn::ImportValue:
-            !Sub "${MieStackName}:AnalyticsStreamArn"
-        MieDataplaneBucket:
-          Fn::ImportValue:
-            !Sub "${MieStackName}:DataplaneBucket"
+        AnalyticsStreamArn: !GetAtt MieStack.Outputs.AnalyticsStreamArn
+        MieDataplaneBucket: !GetAtt MieStack.Outputs.DataplaneBucket
+        NodeType: !Ref ElasticSearchNodeSize
 
   # Deploy Auth stack
 
@@ -70,7 +92,7 @@ Resources:
             - ContentAnalysisApp
             - SourceCode
             - S3Bucket
-          - .s3.
+          - ".s3."
           - !Ref AWS::Region
           - ".amazonaws.com/"
           - !FindInMap
@@ -80,16 +102,10 @@ Resources:
           - "/aws-content-analysis-auth.template"
       Parameters:
         AdminEmail: !Ref AdminEmail
-        WorkflowAPIRestID:
-          Fn::ImportValue:
-            !Sub "${MieStackName}:WorkflowApiId"
-        DataplaneAPIRestID:
-          Fn::ImportValue:
-            !Sub "${MieStackName}:DataplaneApiId"
+        WorkflowApiId: !GetAtt MieStack.Outputs.WorkflowApiRestID
+        DataplaneApiId: !GetAtt MieStack.Outputs.DataplaneApiRestID
         ElasticDomainArn: !GetAtt ContentAnalysisElasticsearchStack.Outputs.DomainArn
-        DataplaneBucket:
-          Fn::ImportValue:
-            !Sub "${MieStackName}:DataplaneBucket"
+        DataplaneBucket: !GetAtt MieStack.Outputs.DataplaneBucket
 
   ContentAnalysisWebStack:
     Type: "AWS::CloudFormation::Stack"
@@ -101,7 +117,7 @@ Resources:
             - ContentAnalysisApp
             - SourceCode
             - S3Bucket
-          - .s3.
+          - ".s3."
           - !Ref AWS::Region
           - ".amazonaws.com/"
           - !FindInMap
@@ -110,21 +126,15 @@ Resources:
             - TemplateKeyPrefix
           - "/aws-content-analysis-web.template"
       Parameters:
-        DataplaneEndpoint:
-          Fn::ImportValue:
-            !Sub "${MieStackName}:DataplaneApiEndpoint"
-        WorkflowEndpoint:
-          Fn::ImportValue:
-            !Sub "${MieStackName}:WorkflowApiEndpoint"
+        DataplaneEndpoint: !GetAtt MieStack.Outputs.DataplaneApiEndpoint
+        WorkflowEndpoint: !GetAtt MieStack.Outputs.WorkflowApiEndpoint
         ElasticEndpoint: !GetAtt ContentAnalysisElasticsearchStack.Outputs.ElasticEndpoint
-        DataplaneBucket:
-          Fn::ImportValue:
-            !Sub "${MieStackName}:DataplaneBucket"
+        DataplaneBucket: !GetAtt MieStack.Outputs.DataplaneBucket
         UserPoolId: !GetAtt ContentAnalysisAuthStack.Outputs.UserPoolId
         IdentityPoolId: !GetAtt ContentAnalysisAuthStack.Outputs.IdentityPoolId
         PoolClientId: !GetAtt ContentAnalysisAuthStack.Outputs.UserPoolClientId
 
-  # Deploy Video Workflow
+  # Deploy video workflow
 
   CompleteVideoWorkflow:
     Type: "AWS::CloudFormation::Stack"
@@ -136,7 +146,7 @@ Resources:
             - ContentAnalysisApp
             - SourceCode
             - S3Bucket
-          - .s3.
+          - ".s3."
           - !Ref AWS::Region
           - ".amazonaws.com/"
           - !FindInMap
@@ -146,11 +156,13 @@ Resources:
           - "/aws-content-analysis-video-workflow.template"
       Parameters:
         WorkflowCustomResourceArn:
-          Fn::ImportValue:
-            !Sub "${MieStackName}:WorkflowCustomResourceArn"
+          Fn::GetAtt:
+            - MieStack
+            - Outputs.WorkflowCustomResourceArn
         OperatorLibraryStack:
-          Fn::ImportValue:
-            !Sub "${MieStackName}:OperatorLibraryStack"
+          Fn::GetAtt:
+            - MieStack
+            - Outputs.OperatorLibraryStack
 
   # Deploy image workflow
 
@@ -164,7 +176,7 @@ Resources:
             - ContentAnalysisApp
             - SourceCode
             - S3Bucket
-          - .s3.
+          - ".s3."
           - !Ref AWS::Region
           - ".amazonaws.com/"
           - !FindInMap
@@ -174,11 +186,13 @@ Resources:
           - "/aws-content-analysis-image-workflow.template"
       Parameters:
         WorkflowCustomResourceArn:
-          Fn::ImportValue:
-            !Sub "${MieStackName}:WorkflowCustomResourceArn"
+          Fn::GetAtt:
+            - MieStack
+            - Outputs.WorkflowCustomResourceArn
         OperatorLibraryStack:
-          Fn::ImportValue:
-            !Sub "${MieStackName}:OperatorLibraryStack"
+          Fn::GetAtt:
+            - MieStack
+            - Outputs.OperatorLibraryStack
 
 Outputs:
   ContentAnalyisSolution:
