@@ -20,8 +20,18 @@ Parameters:
       - "c4.xlarge.elasticsearch"
       - "r4.large.elasticsearch"
       - "r4.xlarge.elasticsearch"
+  ShortUUID:
+    Description: Uuid to use for uniquely naming step functions in  workflows
+    Type: String
+    Default: "0"
 
 Mappings:
+<<<<<<< HEAD:cloudformation/aws-content-analysis-use-existing-mie-stack.yaml
+=======
+  MediaInsightsEngine:
+    Release:
+      Version: "v2.0.3"
+>>>>>>> ef8e22eb9e28d8057d207ce692c76279ca15d5b2:cloudformation/aws-content-analysis-create-new-mie-stack.yaml
   ContentAnalysisApp:
     SourceCode:
       S3Bucket: "%%BUCKET_NAME%%"
@@ -51,12 +61,17 @@ Resources:
             - TemplateKeyPrefix
           - "/aws-content-analysis-elasticsearch.template"
       Parameters:
+<<<<<<< HEAD:cloudformation/aws-content-analysis-use-existing-mie-stack.yaml
         AnalyticsStreamArn:
           Fn::ImportValue:
             !Sub "${MieStackName}:AnalyticsStreamArn"
         MieDataplaneBucket:
           Fn::ImportValue:
             !Sub "${MieStackName}:DataplaneBucket"
+=======
+        AnalyticsStreamArn: !GetAtt MieStack.Outputs.AnalyticsStreamArn
+        MieDataplaneBucket: !GetAtt MieStack.Outputs.DataplaneBucket
+>>>>>>> ef8e22eb9e28d8057d207ce692c76279ca15d5b2:cloudformation/aws-content-analysis-create-new-mie-stack.yaml
         NodeType: !Ref ElasticSearchNodeSize
 
   # Deploy Auth stack
@@ -81,6 +96,7 @@ Resources:
           - "/aws-content-analysis-auth.template"
       Parameters:
         AdminEmail: !Ref AdminEmail
+<<<<<<< HEAD:cloudformation/aws-content-analysis-use-existing-mie-stack.yaml
         WorkflowApiId:
           Fn::ImportValue:
             !Sub "${MieStackName}:WorkflowApiId"
@@ -91,6 +107,42 @@ Resources:
         DataplaneBucket:
           Fn::ImportValue:
             !Sub "${MieStackName}:DataplaneBucket"
+=======
+        WorkflowApiId: !GetAtt MieStack.Outputs.WorkflowApiRestID
+        DataplaneApiId: !GetAtt MieStack.Outputs.DataplaneApiRestID
+        ElasticDomainArn: !GetAtt ContentAnalysisElasticsearchStack.Outputs.DomainArn
+        DataplaneBucket: !GetAtt MieStack.Outputs.DataplaneBucket
+
+  ContentAnalysisWebStack:
+    Type: "AWS::CloudFormation::Stack"
+    Properties:
+      TemplateURL: !Join
+        - ""
+        - - "https://"
+          - !FindInMap
+            - ContentAnalysisApp
+            - SourceCode
+            - S3Bucket
+          - ".s3."
+          - !Ref AWS::Region
+          - ".amazonaws.com/"
+          - !FindInMap
+            - ContentAnalysisApp
+            - SourceCode
+            - TemplateKeyPrefix
+          - "/aws-content-analysis-web.template"
+      Parameters:
+        DataplaneEndpoint: !GetAtt MieStack.Outputs.DataplaneApiEndpoint
+        WorkflowEndpoint: !GetAtt MieStack.Outputs.WorkflowApiEndpoint
+        ElasticEndpoint: !GetAtt ContentAnalysisElasticsearchStack.Outputs.ElasticEndpoint
+        DataplaneBucket: !GetAtt MieStack.Outputs.DataplaneBucket
+        UserPoolId: !GetAtt ContentAnalysisAuthStack.Outputs.UserPoolId
+        IdentityPoolId: !GetAtt ContentAnalysisAuthStack.Outputs.IdentityPoolId
+        PoolClientId: !GetAtt ContentAnalysisAuthStack.Outputs.UserPoolClientId
+        ShortUUID: !Ref ShortUUID
+
+  # Deploy video workflow
+>>>>>>> ef8e22eb9e28d8057d207ce692c76279ca15d5b2:cloudformation/aws-content-analysis-create-new-mie-stack.yaml
 
   # Deploy Video Workflow
   CompleteVideoWorkflow:
@@ -116,8 +168,15 @@ Resources:
           Fn::ImportValue:
             !Sub "${MieStackName}:WorkflowCustomResourceArn"
         OperatorLibraryStack:
+<<<<<<< HEAD:cloudformation/aws-content-analysis-use-existing-mie-stack.yaml
           Fn::ImportValue:
             !Sub "${MieStackName}:OperatorLibraryStack"
+=======
+          Fn::GetAtt:
+            - MieStack
+            - Outputs.OperatorLibraryStack
+        ShortUUID: !Ref ShortUUID
+>>>>>>> ef8e22eb9e28d8057d207ce692c76279ca15d5b2:cloudformation/aws-content-analysis-create-new-mie-stack.yaml
 
   # Deploy image workflow
   CompleteImageWorkflow:
@@ -143,6 +202,7 @@ Resources:
           Fn::ImportValue:
             !Sub "${MieStackName}:WorkflowCustomResourceArn"
         OperatorLibraryStack:
+<<<<<<< HEAD:cloudformation/aws-content-analysis-use-existing-mie-stack.yaml
           Fn::ImportValue:
             !Sub "${MieStackName}:OperatorLibraryStack"
 
@@ -178,6 +238,12 @@ Resources:
         UserPoolId: !GetAtt ContentAnalysisAuthStack.Outputs.UserPoolId
         IdentityPoolId: !GetAtt ContentAnalysisAuthStack.Outputs.IdentityPoolId
         PoolClientId: !GetAtt ContentAnalysisAuthStack.Outputs.UserPoolClientId
+=======
+          Fn::GetAtt:
+            - MieStack
+            - Outputs.OperatorLibraryStack
+        ShortUUID: !Ref ShortUUID
+>>>>>>> ef8e22eb9e28d8057d207ce692c76279ca15d5b2:cloudformation/aws-content-analysis-create-new-mie-stack.yaml
 
 Outputs:
   CloudfrontUrl:
