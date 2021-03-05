@@ -184,7 +184,6 @@ export default {
   },
   data() {
     return {
-      uuid: "",
       file: null,
       isUploading: null,
       uploadValue: null,
@@ -464,13 +463,12 @@ export default {
           Enabled: this.enabledOperators.includes("faceDetection")
         }
       }
-      // Apply the uuid to the stage names to make sure we call the correct workflow resources.
       const workflow_config = {
-        Name: "CasImageWorkflow-" + this.uuid,
+        Name: "CasImageWorkflow",
       }
       workflow_config["Configuration"] = {}
-      workflow_config["Configuration"]["ValidationStage-"+this.uuid] = ValidationStage
-      workflow_config["Configuration"]["RekognitionStage-"+this.uuid] = RekognitionStage
+      workflow_config["Configuration"]["ValidationStage"] = ValidationStage
+      workflow_config["Configuration"]["RekognitionStage"] = RekognitionStage
       return workflow_config
     },
     videoWorkflowConfig() {
@@ -550,16 +548,15 @@ export default {
           Enabled: false
         }
       }
-      // Apply the uuid to the stage names to make sure we call the correct workflow resources.
       const workflow_config = {
-        Name: "CasVideoWorkflow-" + this.uuid,
+        Name: "CasVideoWorkflow",
       }
       workflow_config["Configuration"] = {}
-      workflow_config["Configuration"]["defaultPrelimVideoStage-"+this.uuid] = defaultPrelimVideoStage
-      workflow_config["Configuration"]["defaultVideoStage-"+this.uuid] = defaultVideoStage
-      workflow_config["Configuration"]["defaultAudioStage-"+this.uuid] = defaultAudioStage
-      workflow_config["Configuration"]["defaultTextStage-"+this.uuid] = defaultTextStage
-      workflow_config["Configuration"]["defaultTextSynthesisStage-"+this.uuid] = defaultTextSynthesisStage
+      workflow_config["Configuration"]["defaultPrelimVideoStage"] = defaultPrelimVideoStage
+      workflow_config["Configuration"]["defaultVideoStage"] = defaultVideoStage
+      workflow_config["Configuration"]["defaultAudioStage"] = defaultAudioStage
+      workflow_config["Configuration"]["defaultTextStage"] = defaultTextStage
+      workflow_config["Configuration"]["defaultTextSynthesisStage"] = defaultTextSynthesisStage
       return workflow_config
     }
   },
@@ -572,7 +569,6 @@ export default {
   mounted: function() {
     this.executed_assets = this.execution_history;
     this.pollWorkflowStatus();
-    this.getWorkflowUuid();
   },
   beforeDestroy() {
     clearInterval(this.workflow_status_polling);
@@ -743,27 +739,6 @@ export default {
         alert(
           "ERROR: Failed to start workflow. Check Workflow API logs."
         );
-        console.log(error)
-      }
-    },
-    async getWorkflowUuid() {
-      let apiName = 'mieWorkflowApi'
-      let path =  "workflow/"
-      let requestOpts = {
-        headers: {},
-        response: true,
-        queryStringParameters: {} // optional
-      };
-      try {
-        // Get the default configurations for every defined workflow:
-        let response = await this.$Amplify.API.get(apiName, path, requestOpts);
-        // The aws-content-analysis-use-existing-mie-stack.yaml Cloud Formation template appends a uuid to the workflow names in order to avoid resource conflicts when users deploy this project multiple times in the same region.
-        // Get the uuid used for workflow resource names.
-        // We use this uuid in videoWorkflowConfig() and imageWorkflowConfig in order to
-        // reference the correct workflow and stage names.
-        this.uuid = response.data.filter(x => x.Name.startsWith('CasVideoWorkflow'))[0].Name.split('-')[1]
-      } catch (error) {
-        alert("ERROR: Failed to get workflow status");
         console.log(error)
       }
     },

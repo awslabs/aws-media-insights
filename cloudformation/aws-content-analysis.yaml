@@ -1,10 +1,7 @@
 AWSTemplateFormatVersion: "2010-09-09"
-Description: AWS Content Analysis - Deploys the AWS Content Analysis Application
+Description: AWS Content Analysis - Deploys the AWS Content Analysis Application and the required Media Insights Engine Framework
 
 Parameters:
-  MieStackName:
-    Description: Name of the Media Insights Engine framework stack
-    Type: String
   AdminEmail:
     Description: Email address of the Content Analysis Administrator
     Type: String
@@ -22,6 +19,9 @@ Parameters:
       - "r4.xlarge.elasticsearch"
 
 Mappings:
+  MediaInsightsEngine:
+    Release:
+      Version: "v2.0.3"
   ContentAnalysisApp:
     SourceCode:
       S3Bucket: "%%BUCKET_NAME%%"
@@ -30,58 +30,34 @@ Mappings:
       WebsitePrefix: "content-analysis-solution/%%VERSION%%/code/website"
 
 Resources:
-  # ShortUUID function - create a short UUID to avoid name conflicts
-  ShortUUIDFunction:
-    Type: AWS::Lambda::Function
-    Properties:
-      Code:
-        ZipFile: |
-          import string
-          import random
-          import cfnresponse
-          def id_generator(size=6, chars=string.ascii_lowercase + string.digits):
-              return "".join(random.choices(chars, k=size))
-          def handler(event, context):
-              response_data = {'Data': id_generator()}
-              cfnresponse.send(event, context, cfnresponse.SUCCESS, response_data, "CustomResourcePhysicalID")
-      Handler: index.handler
-      Runtime: python3.8
-      Role: !GetAtt ShortUUIDExecutionRole.Arn
-  ShortUUIDExecutionRole:
-    Type: AWS::IAM::Role
-    Properties:
-      AssumeRolePolicyDocument:
-        Version: 2012-10-17
-        Statement:
-          - Effect: Allow
-            Principal:
-              Service:
-                - lambda.amazonaws.com
-            Action:
-              - sts:AssumeRole
-      Path: /
-      Policies:
-        - PolicyName: root
-          PolicyDocument:
-            Version: 2012-10-17
-            Statement:
-              - Effect: Allow
-                Action: ['logs:*']
-                Resource: 'arn:aws:logs:*:*:*'
-  ShortUUIDFunctionPermissions:
-    Type: AWS::Lambda::Permission
-    Properties:
-      Action: 'lambda:InvokeFunction'
-      FunctionName: !GetAtt ShortUUIDFunction.Arn
-      Principal: 'cloudformation.amazonaws.com'
-  GetShortUUID:
-    Type: Custom::CustomResource
-    Properties:
-      ServiceToken: !GetAtt ShortUUIDFunction.Arn
+  # Deploy MIE Framework
 
-  # Deploy everything under the Uuid stack so the resources named with GetShortUUID are all using the same uuid. This lets us reference workflow names from the webapp using a single uuid env variable.
+  MieStack:
+    Type: "AWS::CloudFormation::Stack"
+    Properties:
+      TemplateURL: !Join
+        - ""
+        - - "https://"
+          - "rodeolabz-"
+          - !Ref AWS::Region
+          - ".s3."
+          - !Ref AWS::Region
+          - ".amazonaws.com/"
+          - "media_insights_engine/"
+          - !FindInMap
+            - MediaInsightsEngine
+            - Release
+            - Version
+          - "/media-insights-stack.template"
+      Parameters:
+        DeployAnalyticsPipeline: Yes
+        DeployTestResources: No
+        MaxConcurrentWorkflows: 5
+        EnableXrayTrace: Yes
 
-  Uuid:
+  # Deploy Elasticsearch
+
+  ContentAnalysisElasticsearchStack:
     Type: "AWS::CloudFormation::Stack"
     Properties:
       TemplateURL: !Join
@@ -91,44 +67,133 @@ Resources:
             - ContentAnalysisApp
             - SourceCode
             - S3Bucket
-          - .s3.
+          - ".s3."
           - !Ref AWS::Region
           - ".amazonaws.com/"
           - !FindInMap
             - ContentAnalysisApp
             - SourceCode
             - TemplateKeyPrefix
-          - "/aws-content-analysis-use-existing-mie-stack.template"
+          - "/aws-content-analysis-elasticsearch.template"
       Parameters:
-        MieStackName: !Ref MieStackName
-        S3Bucket: !FindInMap
-          - ContentAnalysisApp
-          - SourceCode
-          - S3Bucket
-        CodeKeyPrefix: !FindInMap
-          - ContentAnalysisApp
-          - SourceCode
-          - CodeKeyPrefix
-        TemplateKeyPrefix: !FindInMap
-          - ContentAnalysisApp
-          - SourceCode
-          - TemplateKeyPrefix
-        WebsitePrefix: !FindInMap
-          - ContentAnalysisApp
-          - SourceCode
-          - WebsitePrefix
+        AnalyticsStreamArn: !GetAtt MieStack.Outputs.AnalyticsStreamArn
+        MieDataplaneBucket: !GetAtt MieStack.Outputs.DataplaneBucket
+        NodeType: !Ref ElasticSearchNodeSize
+
+  # Deploy Auth stack
+
+  ContentAnalysisAuthStack:
+    Type: "AWS::CloudFormation::Stack"
+    Properties:
+      TemplateURL: !Join
+        - ""
+        - - "https://"
+          - !FindInMap
+            - ContentAnalysisApp
+            - SourceCode
+            - S3Bucket
+          - ".s3."
+          - !Ref AWS::Region
+          - ".amazonaws.com/"
+          - !FindInMap
+            - ContentAnalysisApp
+            - SourceCode
+            - TemplateKeyPrefix
+          - "/aws-content-analysis-auth.template"
+      Parameters:
         AdminEmail: !Ref AdminEmail
-        ElasticSearchNodeSize: !Ref ElasticSearchNodeSize
-        ShortUUID: !GetAtt GetShortUUID.Data
+        WorkflowApiId: !GetAtt MieStack.Outputs.WorkflowApiRestID
+        DataplaneApiId: !GetAtt MieStack.Outputs.DataplaneApiRestID
+        ElasticDomainArn: !GetAtt ContentAnalysisElasticsearchStack.Outputs.DomainArn
+        DataplaneBucket: !GetAtt MieStack.Outputs.DataplaneBucket
+
+  ContentAnalysisWebStack:
+    Type: "AWS::CloudFormation::Stack"
+    Properties:
+      TemplateURL: !Join
+        - ""
+        - - "https://"
+          - !FindInMap
+            - ContentAnalysisApp
+            - SourceCode
+            - S3Bucket
+          - ".s3."
+          - !Ref AWS::Region
+          - ".amazonaws.com/"
+          - !FindInMap
+            - ContentAnalysisApp
+            - SourceCode
+            - TemplateKeyPrefix
+          - "/aws-content-analysis-web.template"
+      Parameters:
+        DataplaneEndpoint: !GetAtt MieStack.Outputs.DataplaneApiEndpoint
+        WorkflowEndpoint: !GetAtt MieStack.Outputs.WorkflowApiEndpoint
+        ElasticEndpoint: !GetAtt ContentAnalysisElasticsearchStack.Outputs.ElasticEndpoint
+        DataplaneBucket: !GetAtt MieStack.Outputs.DataplaneBucket
+        UserPoolId: !GetAtt ContentAnalysisAuthStack.Outputs.UserPoolId
+        IdentityPoolId: !GetAtt ContentAnalysisAuthStack.Outputs.IdentityPoolId
+        PoolClientId: !GetAtt ContentAnalysisAuthStack.Outputs.UserPoolClientId
+
+  # Deploy video workflow
+
+  CompleteVideoWorkflow:
+    Type: "AWS::CloudFormation::Stack"
+    Properties:
+      TemplateURL: !Join
+        - ""
+        - - "https://"
+          - !FindInMap
+            - ContentAnalysisApp
+            - SourceCode
+            - S3Bucket
+          - ".s3."
+          - !Ref AWS::Region
+          - ".amazonaws.com/"
+          - !FindInMap
+            - ContentAnalysisApp
+            - SourceCode
+            - TemplateKeyPrefix
+          - "/aws-content-analysis-video-workflow.template"
+      Parameters:
+        WorkflowCustomResourceArn:
+          Fn::GetAtt:
+            - MieStack
+            - Outputs.WorkflowCustomResourceArn
+        OperatorLibraryStack:
+          Fn::GetAtt:
+            - MieStack
+            - Outputs.OperatorLibraryStack
+
+  # Deploy image workflow
+
+  CompleteImageWorkflow:
+    Type: "AWS::CloudFormation::Stack"
+    Properties:
+      TemplateURL: !Join
+        - ""
+        - - "https://"
+          - !FindInMap
+            - ContentAnalysisApp
+            - SourceCode
+            - S3Bucket
+          - ".s3."
+          - !Ref AWS::Region
+          - ".amazonaws.com/"
+          - !FindInMap
+            - ContentAnalysisApp
+            - SourceCode
+            - TemplateKeyPrefix
+          - "/aws-content-analysis-image-workflow.template"
+      Parameters:
+        WorkflowCustomResourceArn:
+          Fn::GetAtt:
+            - MieStack
+            - Outputs.WorkflowCustomResourceArn
+        OperatorLibraryStack:
+          Fn::GetAtt:
+            - MieStack
+            - Outputs.OperatorLibraryStack
 
 Outputs:
-  CloudfrontUrl:
-    Value: !GetAtt Uuid.Outputs.CloudfrontUrl
-  ElasticEndpoint:
-    Value: !GetAtt Uuid.Outputs.ElasticEndpoint
-  UserPoolId:
-    Value: !GetAtt Uuid.Outputs.UserPoolId
-  IdentityPoolId:
-    Value: !GetAtt Uuid.Outputs.IdentityPoolId
-  UserPoolClientId:
-    Value: !GetAtt Uuid.Outputs.UserPoolClientId
+  ContentAnalyisSolution:
+    Value: !GetAtt ContentAnalysisWebStack.Outputs.CloudfrontUrl

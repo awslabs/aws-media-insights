@@ -10,8 +10,8 @@ The following Cloudformation templates will deploy the Media Insights front-end 
 
 Region| Launch
 ------|-----
-US East (N. Virginia) | [![Launch in us-east-1](doc/images/launch-stack.png)](https://console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks/new?stackName=mie&templateURL=https://rodeolabz-us-east-1.s3.us-east-1.amazonaws.com/content-analysis-solution/v2.0.3/cf/aws-content-analysis-create-new-mie-stack.template)
-US West (Oregon) | [![Launch in us-west-2](doc/images/launch-stack.png)](https://console.aws.amazon.com/cloudformation/home?region=us-west-2#/stacks/new?stackName=mie&templateURL=https://rodeolabz-us-west-2.s3.us-west-2.amazonaws.com/content-analysis-solution/v2.0.3/cf/aws-content-analysis-create-new-mie-stack.template)
+US East (N. Virginia) | [![Launch in us-east-1](doc/images/launch-stack.png)](https://console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks/new?stackName=mie&templateURL=https://rodeolabz-us-east-1.s3.us-east-1.amazonaws.com/content-analysis-solution/v2.0.3/cf/aws-content-analysis.template)
+US West (Oregon) | [![Launch in us-west-2](doc/images/launch-stack.png)](https://console.aws.amazon.com/cloudformation/home?region=us-west-2#/stacks/new?stackName=mie&templateURL=https://rodeolabz-us-west-2.s3.us-west-2.amazonaws.com/content-analysis-solution/v2.0.3/cf/aws-content-analysis.template)
 
 For more installation options, see the [Advanced Installation](#advanced-installation-options) section.
 
@@ -65,15 +65,6 @@ Here are some sample searches:
 * To see the full set of attributes that you can search for, click the Analytics menu item and search for "*" in the Discover tab of Kibana.
 
 # Advanced Installation Options
-
-## Deploying the demo app over an existing MIE stack
-
-The following Cloudformation templates can be used to deploy this demo application over an existing (already deployed) MIE stack.
-
-Region| Launch
-------|-----
-US East (N. Virginia) | [![Launch in us-east-1](doc/images/launch-stack.png)](https://console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks/new?stackName=mie&templateURL=https://rodeolabz-us-east-1.s3.us-east-1.amazonaws.com/content-analysis-solution/v2.0.3/cf/aws-content-analysis.template)
-US West (Oregon) | [![Launch in us-west-2](doc/images/launch-stack.png)](https://console.aws.amazon.com/cloudformation/home?region=us-west-2#/stacks/new?stackName=mie&templateURL=https://rodeolabz-us-west-2.s3.us-west-2.amazonaws.com/content-analysis-solution/v2.0.3/cf/aws-content-analysis.template)
 
 ## Building the demo app from source code
 
