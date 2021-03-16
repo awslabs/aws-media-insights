@@ -130,6 +130,16 @@
                   <label>Translation Target Language</label>
                   <b-form-select v-model="targetLanguageCode" :options="translateLanguages"></b-form-select>
                 </div>
+                <b-form-checkbox
+                    v-if="enabledOperators.includes('ComprehendEntities') || enabledOperators.includes('ComprehendKeyPhrases')"
+                    v-model="ComprehendEncryption">
+                  Encrypt Comprehend job
+                </b-form-checkbox>
+                <b-form-input
+                    v-if="ComprehendEncryption && (enabledOperators.includes('ComprehendEntities') || enabledOperators.includes('ComprehendKeyPhrases'))"
+                    v-model="kmsKeyId"
+                    placeholder="Enter KMS key ID"
+                ></b-form-input>
               </b-form-group>
               <div v-if="textFormError" style="color:red">
                 {{ textFormError }}
@@ -261,6 +271,8 @@ export default {
       ],
       faceCollectionId: "",
       genericDataFilename: "",
+      ComprehendEncryption: false,
+      kmsKeyId: "",
       transcribeLanguage: "en-US",
       transcribeLanguages: [
         { text: "Arabic, Gulf", value: "ar-AE" },
@@ -541,6 +553,10 @@ export default {
         ComprehendKeyPhrases: {
           Enabled: this.enabledOperators.includes("ComprehendKeyPhrases")
         }
+      }
+      if (this.ComprehendEncryption === true && this.kmsKeyId.length > 0) {
+        defaultTextStage["ComprehendEntities"]["KmsKeyId"] = this.kmsKeyId
+        defaultTextStage["ComprehendKeyPhrases"]["KmsKeyId"] = this.kmsKeyId
       }
       const defaultTextSynthesisStage = {
         // Polly is available in the MIECompleteWorkflow but not used in the front-end, so we've disabled it here.
