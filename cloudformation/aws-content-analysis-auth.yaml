@@ -19,7 +19,7 @@ Parameters:
     Type: String
   ParentStackName:
     Description: Name of the parent Cloud Formation stack
-      Type: String
+    Type: String
 
 Resources:
   ContentAnalysisUserPool:
