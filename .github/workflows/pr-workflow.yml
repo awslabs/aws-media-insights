@@ -73,7 +73,7 @@ jobs:
           fi;
           done;
           # Remove the invitation email from s3
-          #aws s3 rm s3://github-test-bot/$INVITATION_EMAIL
+          aws s3 rm s3://github-test-bot/$INVITATION_EMAIL
           TEMP_PASSWORD=$(cat ./invitation_email | grep 'temporary password' | sed 's/.*password is \(.*\)<br>AWS.*/\1/')
           # Password may contain HTML entities, so decode them to characters
           TEMP_PASSWORD=$(echo $TEMP_PASSWORD | perl -MHTML::Entities -pe 'decode_entities($_);')
@@ -135,8 +135,9 @@ jobs:
           WORKFLOW_ID=$(cat curl.txt | cut -f 2 -d "'" | perl -pe 's/"Definition.+?}]}}}",//g' | jq '.Id' --raw-output)
           WORKFLOW_STATUS=$(awscurl -X GET --region us-west-2 ${WORKFLOW_API_ENDPOINT}workflow/execution/${WORKFLOW_ID} | cat | cut -f 2 -d "'" | perl -pe 's/"Definition.+?}]}}}",//g' | jq '.Status' --raw-output)
           set +x
+          echo "Waiting for workflow to complete..."
           while [ "$WORKFLOW_STATUS" = "Started" ] || [ "$WORKFLOW_STATUS" = "Queued" ]; do sleep 10; WORKFLOW_STATUS=$(awscurl -X GET --region us-west-2 ${WORKFLOW_API_ENDPOINT}workflow/execution/${WORKFLOW_ID} | cat | cut -f 2 -d "'" | perl -pe 's/"Definition.+?}]}}}",//g' | jq '.Status' --raw-output); echo -n '.'; done
-          echo $WORKFLOW_STATUS
+          echo "\n$WORKFLOW_STATUS"
 
       - name: Start puppeteer
         # The checkout action above changes the work dir in a way that breaks
@@ -144,11 +145,9 @@ jobs:
         # explicitly here.
         working-directory: /home/runner/work/
         run: |
-          TEMP_PASSWORD="${{ env.TEMP_PASSWORD }}"
-          WEBAPP_URL=${{ env.WEBAPP_URL }}
           echo "Downloading puppeteer tests"
           git clone https://github.com/iandow/aws-media-insights-puppeteer
           cd aws-media-insights-puppeteer
           npm i puppeteer puppeteer-screenshot-tester --quiet
           docker build --tag=cas-puppeteer:latest .
-          docker run --rm -v "$PWD":/usr/src/app -e WEBAPP_URL="${WEBAPP_URL}" -e TEMP_PASSWORD="${TEMP_PASSWORD}" cas-puppeteer:latest
+          docker run --rm -v "$PWD":/usr/src/app -e WEBAPP_URL="${{ env.WEBAPP_URL }}" -e TEMP_PASSWORD="${{ env.TEMP_PASSWORD }}" cas-puppeteer:latest
