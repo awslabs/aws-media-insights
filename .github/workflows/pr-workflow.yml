@@ -46,6 +46,17 @@ jobs:
           rm -f template
           STACK_NAME="pr${SHORT_SHA}"
           set -x
+
+          # If STACK_NAME already exists then delete it.
+          # This is necessary in order to rerun github action workflows.
+          aws cloudformation describe-stacks --stack-name $STACK_NAME --region $REGION 2>&1 | grep "does not exist"
+          if [ $? -ne 0 ]; then
+            echo "$STACK_NAME stack already exists."
+            echo "Removing stack $STACK_NAME";
+            aws cloudformation delete-stack --stack-name $STACK_NAME --region $REGION
+            aws cloudformation wait stack-delete-complete --stack-name $STACK_NAME
+          fi
+
           aws cloudformation create-stack --stack-name $STACK_NAME --template-url $TEMPLATE --region $REGION --parameters ParameterKey=AdminEmail,ParameterValue=$EMAIL --capabilities CAPABILITY_IAM CAPABILITY_NAMED_IAM CAPABILITY_AUTO_EXPAND --disable-rollback
           aws cloudformation wait stack-create-complete --stack-name $STACK_NAME
           set +x
@@ -58,14 +69,14 @@ jobs:
 
       - name: Get login credentials
         run: |
-          # Get the newest file in s3://github-test-bot
-          NUM_EMAILS=$(aws s3 ls s3://github-test-bot | wc -l)
+          # Get the newest file in s3://github-test-bot2
+          NUM_EMAILS=$(aws s3 ls s3://github-test-bot2 | wc -l)
           # Iterate thru all the files in the s3 bucket until you find the invitation
           # email that references to our stack:
           for i in `seq 1 $NUM_EMAILS`; do
-          INVITATION_EMAIL=$(aws s3api list-objects-v2 --bucket "github-test-bot" --query 'reverse(sort_by(Contents, &LastModified))['$((i-1))'].Key' --output=text)
+          INVITATION_EMAIL=$(aws s3api list-objects-v2 --bucket "github-test-bot2" --query 'reverse(sort_by(Contents, &LastModified))['$((i-1))'].Key' --output=text)
           # Make sure it belongs to our stack
-          aws s3 cp s3://github-test-bot/$INVITATION_EMAIL ./invitation_email --quiet
+          aws s3 cp s3://github-test-bot2/$INVITATION_EMAIL ./invitation_email --quiet
           STACK_NAME="pr${SHORT_SHA}"
           grep ":stack/${STACK_NAME}" ./invitation_email
           if [ $? -eq 0 ];
@@ -73,7 +84,7 @@ jobs:
           fi;
           done;
           # Remove the invitation email from s3
-          aws s3 rm s3://github-test-bot/$INVITATION_EMAIL
+          aws s3 rm s3://github-test-bot2/$INVITATION_EMAIL
           TEMP_PASSWORD=$(cat ./invitation_email | grep 'temporary password' | sed 's/.*password is \(.*\)<br>AWS.*/\1/')
           # Password may contain HTML entities, so decode them to characters
           TEMP_PASSWORD=$(echo $TEMP_PASSWORD | perl -MHTML::Entities -pe 'decode_entities($_);')
