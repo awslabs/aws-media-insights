@@ -162,3 +162,10 @@ jobs:
           npm i puppeteer puppeteer-screenshot-tester --quiet
           docker build --tag=cas-puppeteer:latest .
           docker run --rm -v "$PWD":/usr/src/app -e WEBAPP_URL="${{ env.WEBAPP_URL }}" -e TEMP_PASSWORD="${{ env.TEMP_PASSWORD }}" cas-puppeteer:latest
+
+      - name: Clean the test environment
+        run: |
+          STACK_NAME="pr${SHORT_SHA}"
+          aws cloudformation delete-stack --stack-name $STACK_NAME --region $REGION
+          aws cloudformation wait stack-delete-complete --stack-name $STACK_NAME
+          aws s3 ls | awk '{print $3}' | grep $STACK_NAME  | xargs -I{} aws s3 rb s3://{} --force
