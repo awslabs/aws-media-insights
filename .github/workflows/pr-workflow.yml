@@ -24,7 +24,6 @@ jobs:
         with:
           aws-access-key-id: ${{ secrets.BUILD_AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.BUILD_AWS_SECRET_ACCESS_KEY }}
-          invitation-email-recipient: ${{ secrets.INVITATION_EMAIL_RECIPIENT }}
           aws-region: us-west-2
 
       - name: Setup build environment
@@ -74,14 +73,15 @@ jobs:
           # Iterate thru all the files in the s3 bucket until you find the invitation
           # email that references to our stack:
           for i in `seq 1 $NUM_EMAILS`; do
-          INVITATION_EMAIL=$(aws s3api list-objects-v2 --bucket "github-test-bot2" --query 'reverse(sort_by(Contents, &LastModified))['$((i-1))'].Key' --output=text)
-          # Make sure it belongs to our stack
-          aws s3 cp s3://github-test-bot2/$INVITATION_EMAIL ./invitation_email --quiet
-          STACK_NAME="pr${SHORT_SHA}"
-          grep ":stack/${STACK_NAME}" ./invitation_email
-          if [ $? -eq 0 ];
-          then break; # we found the invitation email so quit looking
-          fi;
+            INVITATION_EMAIL=$(aws s3api list-objects-v2 --bucket "github-test-bot2" --query 'reverse(sort_by(Contents, &LastModified))['$((i-1))'].Key' --output=text)
+            # Make sure it belongs to our stack
+            aws s3 cp s3://github-test-bot2/$INVITATION_EMAIL ./invitation_email --quiet
+            STACK_NAME="pr${SHORT_SHA}"
+            # Check to see if this invitation email is for the $STACK_NAME stack
+            grep ":stack/${STACK_NAME}" ./invitation_email > /dev/null
+            if [ $? -eq 0 ];
+              then break; # we found the invitation email so quit looking
+            fi;
           done;
           # Remove the invitation email from s3
           aws s3 rm s3://github-test-bot2/$INVITATION_EMAIL
