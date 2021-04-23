@@ -100,8 +100,8 @@ jobs:
           WORKFLOW_API_ENDPOINT=$(aws cloudformation describe-stacks --stack-name "$MIE_STACK_NAME" --region $REGION --query "Stacks[0].Outputs[?OutputKey=='WorkflowApiEndpoint'].OutputValue" --output text)
           DATAPLANE_BUCKET=$(aws cloudformation describe-stacks --stack-name "$MIE_STACK_NAME" --region $REGION --query "Stacks[0].Outputs[?OutputKey=='DataplaneBucket'].OutputValue" --output text)
           # Upload a test video file
-          wget -q https://techmkt-videoarchive.s3-us-west-2.amazonaws.com/amazon_studios/sizzle_reels/Amazon+TCA+2019+Series+Sizzle.mp4
-          aws s3 cp Amazon+TCA+2019+Series+Sizzle.mp4 s3://${DATAPLANE_BUCKET}
+          wget -q https://techmkt-videoarchive.s3-us-west-2.amazonaws.com/amazon_studios/sizzle_reels/Amazon+TCA+2019+Series+Sizzle.mp4 -O AmazonVideoSizzle2019.mp4
+          aws s3 cp AmazonVideoSizzle2019.mp4 s3://${DATAPLANE_BUCKET}
           # Install an IAM enabled HTTP client
           pip install awscurl
 
@@ -140,7 +140,7 @@ jobs:
           echo "Starting CasVideoWorkflow"
           set -x
           # Execute workflow
-          awscurl -X POST --region us-west-2 --data '{"Name":"CasVideoWorkflow", "Configuration":'$WORKFLOW_CONFIGURATION', "Input":{"Media":{"Video":{"S3Bucket": "'${DATAPLANE_BUCKET}'", "S3Key":"Amazon+TCA+2019+Series+Sizzle.mp4"}}}}' ${WORKFLOW_API_ENDPOINT}workflow/execution > curl.txt
+          awscurl -X POST --region us-west-2 --data '{"Name":"CasVideoWorkflow", "Configuration":'$WORKFLOW_CONFIGURATION', "Input":{"Media":{"Video":{"S3Bucket": "'${DATAPLANE_BUCKET}'", "S3Key":"AmazonVideoSizzle2019.mp4"}}}}' ${WORKFLOW_API_ENDPOINT}workflow/execution > curl.txt
           set +x
           # Wait until the workflow is done
           WORKFLOW_ID=$(cat curl.txt | cut -f 2 -d "'" | perl -pe 's/"Definition.+?}]}}}",//g' | jq '.Id' --raw-output)
@@ -165,15 +165,15 @@ jobs:
           echo "Running puppeteer tests"
           docker run --rm -v "$PWD":/usr/src/app -e WEBAPP_URL="${{ env.WEBAPP_URL }}" -e TEMP_PASSWORD="${{ env.TEMP_PASSWORD }}" cas-puppeteer:latest
 
-#      - name: Clean the test environment
-#        run: |
-#          STACK_NAME="pr${SHORT_SHA}"
-#          echo "Removing $STACK_NAME"
-#          aws cloudformation delete-stack --stack-name $STACK_NAME --region $REGION
-#          echo "Waiting for stack to delete..."
-#          aws cloudformation wait stack-delete-complete --stack-name $STACK_NAME
-#          echo "Removing $STACK_NAME S3 buckets:"
-#          aws s3 ls | awk '{print $3}' | grep $STACK_NAME  | while read line; do
-#          echo "s3://$line;
-#          aws s3 rb s3://{} --force > /dev/null;
-#          done
+      - name: Clean the test environment
+        run: |
+          STACK_NAME="pr${SHORT_SHA}"
+          echo "Removing $STACK_NAME"
+          aws cloudformation delete-stack --stack-name $STACK_NAME --region $REGION
+          echo "Waiting for stack to delete..."
+          aws cloudformation wait stack-delete-complete --stack-name $STACK_NAME
+          echo "Removing $STACK_NAME S3 buckets:"
+          aws s3 ls | awk '{print $3}' | grep $STACK_NAME  | while read line; do
+          echo "s3://$line";
+          aws s3 rb s3://{} --force > /dev/null;
+          done
