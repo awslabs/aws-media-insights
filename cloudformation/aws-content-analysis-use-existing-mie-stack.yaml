@@ -91,6 +91,7 @@ Resources:
         DataplaneBucket:
           Fn::ImportValue:
             !Sub "${MieStackName}:DataplaneBucket"
+        ParentStackName: !Ref AWS::StackId
 
   # Deploy Video Workflow
   CompleteVideoWorkflow:
