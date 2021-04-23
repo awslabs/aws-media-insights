@@ -2,8 +2,8 @@ name: pr-workflow
 
 on:
   pull_request:
-    branches:
-      - development
+    branches: [ development ]
+
   workflow_dispatch:
     inputs:
       remove_stack:
