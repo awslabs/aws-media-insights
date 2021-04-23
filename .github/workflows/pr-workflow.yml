@@ -5,6 +5,11 @@ on:
     branches:
       - development
   workflow_dispatch:
+    inputs:
+      remove_stack:
+        description: 'Remove stack when finished?'
+        required: true
+        default: 'true'
 
 jobs:
   build-us-west-2:
@@ -167,13 +172,18 @@ jobs:
 
       - name: Clean the test environment
         run: |
-          STACK_NAME="pr${SHORT_SHA}"
-          echo "Removing $STACK_NAME"
-          aws cloudformation delete-stack --stack-name $STACK_NAME --region $REGION
-          echo "Waiting for stack to delete..."
-          aws cloudformation wait stack-delete-complete --stack-name $STACK_NAME
-          echo "Removing $STACK_NAME S3 buckets:"
-          aws s3 ls | awk '{print $3}' | grep $STACK_NAME  | while read line; do
-          echo "s3://$line";
-          aws s3 rb s3://{} --force > /dev/null;
-          done
+          # remove stack by default
+          if [ -z ${{ github.event.inputs.remove_stack }} ] || [ ${{ github.event.inputs.remove_stack }} = "true" ]; then
+            STACK_NAME="pr${SHORT_SHA}"
+            echo "Removing $STACK_NAME"
+            aws cloudformation delete-stack --stack-name $STACK_NAME --region $REGION
+            echo "Waiting for stack to delete..."
+            aws cloudformation wait stack-delete-complete --stack-name $STACK_NAME
+            echo "Removing $STACK_NAME S3 buckets:"
+            aws s3 ls | awk '{print $3}' | grep $STACK_NAME  | while read line; do
+            echo "s3://$line";
+            aws s3 rb s3://$line --force > /dev/null;
+            done
+          else
+            echo "User requested not to delete stack."
+          fi
