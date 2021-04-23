@@ -48,7 +48,7 @@ jobs:
 
           # If STACK_NAME already exists then delete it.
           # This is necessary in order to rerun github action workflows.
-          aws cloudformation describe-stacks --stack-name $STACK_NAME --region $REGION 2>&1 | grep "does not exist"
+          aws cloudformation describe-stacks --stack-name $STACK_NAME --region $REGION 2>&1 | grep "does not exist" > /dev/null
           if [ $? -ne 0 ]; then
             echo "$STACK_NAME stack already exists."
             echo "Removing stack $STACK_NAME";
@@ -68,10 +68,8 @@ jobs:
 
       - name: Get login credentials
         run: |
-          # Get the newest file in s3://github-test-bot2
+          # Iterate thru all the files in the s3://github-test-bot2 until you find the invitation email that references our stack
           NUM_EMAILS=$(aws s3 ls s3://github-test-bot2 | wc -l)
-          # Iterate thru all the files in the s3 bucket until you find the invitation
-          # email that references to our stack:
           for i in `seq 1 $NUM_EMAILS`; do
             INVITATION_EMAIL=$(aws s3api list-objects-v2 --bucket "github-test-bot2" --query 'reverse(sort_by(Contents, &LastModified))['$((i-1))'].Key' --output=text)
             # Make sure it belongs to our stack
@@ -80,7 +78,10 @@ jobs:
             # Check to see if this invitation email is for the $STACK_NAME stack
             grep ":stack/${STACK_NAME}" ./invitation_email > /dev/null
             if [ $? -eq 0 ];
-              then break; # we found the invitation email so quit looking
+              then
+              echo "Found invitation email in s3://github-test-bot2/$INVITATION_EMAIL"
+              # we found the invitation email so quit looking
+              break;
             fi;
           done;
           # Remove the invitation email from s3
@@ -99,24 +100,24 @@ jobs:
           WORKFLOW_API_ENDPOINT=$(aws cloudformation describe-stacks --stack-name "$MIE_STACK_NAME" --region $REGION --query "Stacks[0].Outputs[?OutputKey=='WorkflowApiEndpoint'].OutputValue" --output text)
           DATAPLANE_BUCKET=$(aws cloudformation describe-stacks --stack-name "$MIE_STACK_NAME" --region $REGION --query "Stacks[0].Outputs[?OutputKey=='DataplaneBucket'].OutputValue" --output text)
           # Upload a test video file
-          wget -q https://vjs.zencdn.net/v/oceans.mp4
-          aws s3 cp oceans.mp4 s3://${DATAPLANE_BUCKET}
+          wget -q https://techmkt-videoarchive.s3-us-west-2.amazonaws.com/amazon_studios/sizzle_reels/Amazon+TCA+2019+Series+Sizzle.mp4
+          aws s3 cp Amazon+TCA+2019+Series+Sizzle.mp4 s3://${DATAPLANE_BUCKET}
           # Install an IAM enabled HTTP client
           pip install awscurl
 
-          # ####################################
+          #
+          # Uncomment to enable CasImageWorkflow:
+          #
+          # #####################################
           # ###### TEST CasImageWorkflow  #######
-          # ####################################
+          # #####################################
           # # TODO: upload TEST_IMAGE.png image file to dataplane bucket
-
           # # Get workflow configuration
           # WORKFLOW_NAME=CasImageWorkflow
-
           # # Disable faceSearch
           # WORKFLOW_CONFIGURATION=$(awscurl -X GET --region us-west-2 ${WORKFLOW_API_ENDPOINT}workflow/$WORKFLOW_NAME | cut -f 2 -d "'" | perl -pe 's/"Definition.+?}]}}}",//g' | jq '.Stages.RekognitionStage.Configuration' --compact-output)
           # WORKFLOW_CONFIGURATION=$(echo $WORKFLOW_CONFIGURATION | sed -e 's/"faceSearchImage":{"MediaType":"Image","Enabled":true}/"faceSearchImage":{"MediaType":"Image","Enabled":false}/')
           # WORKFLOW_CONFIGURATION='{"RekognitionStage":'$WORKFLOW_CONFIGURATION'}'
-
           # # Execute workflow
           # awscurl -X POST --region us-west-2 --data '{"Name":"CasImageWorkflow", "Configuration":'$WORKFLOW_CONFIGURATION', "Input":{"Media":{"Image":{"S3Bucket": "'${DATAPLANE_BUCKET}'", "S3Key":"TEST_IMAGE.png"}}}}' ${WORKFLOW_API_ENDPOINT}workflow/execution > curl.txt
 
@@ -129,26 +130,25 @@ jobs:
           ###### TEST CasVideoWorkflow #######
           ####################################
           WORKFLOW_NAME=CasVideoWorkflow
-
           # Disable faceSearch and GenericDataLookup operator
-          set -x
           WORKFLOW_CONFIGURATION=$(awscurl -X GET --region us-west-2 ${WORKFLOW_API_ENDPOINT}workflow/$WORKFLOW_NAME | cut -f 2 -d "'" | perl -pe 's/"Definition.+?}]}}}",//g' | jq '.Stages.defaultVideoStage.Configuration' --compact-output)
           WORKFLOW_CONFIGURATION=$(echo $WORKFLOW_CONFIGURATION | sed -e 's/"faceSearch":{"MediaType":"Video","Enabled":true}/"faceSearch":{"MediaType":"Video","Enabled":false}/')
           WORKFLOW_CONFIGURATION=$(echo $WORKFLOW_CONFIGURATION | sed -e 's/"GenericDataLookup":{"MediaType":"Video","Enabled":true}/"GenericDataLookup":{"MediaType":"Video","Enabled":false}/')
           WORKFLOW_CONFIGURATION='{"defaultVideoStage":'$WORKFLOW_CONFIGURATION'}'
           echo "WORKFLOW_CONFIGURATION:"
           echo $WORKFLOW_CONFIGURATION
-
+          echo "Starting CasVideoWorkflow"
+          set -x
           # Execute workflow
-          awscurl -X POST --region us-west-2 --data '{"Name":"CasVideoWorkflow", "Configuration":'$WORKFLOW_CONFIGURATION', "Input":{"Media":{"Video":{"S3Bucket": "'${DATAPLANE_BUCKET}'", "S3Key":"oceans.mp4"}}}}' ${WORKFLOW_API_ENDPOINT}workflow/execution > curl.txt
-
+          awscurl -X POST --region us-west-2 --data '{"Name":"CasVideoWorkflow", "Configuration":'$WORKFLOW_CONFIGURATION', "Input":{"Media":{"Video":{"S3Bucket": "'${DATAPLANE_BUCKET}'", "S3Key":"Amazon+TCA+2019+Series+Sizzle.mp4"}}}}' ${WORKFLOW_API_ENDPOINT}workflow/execution > curl.txt
+          set +x
           # Wait until the workflow is done
           WORKFLOW_ID=$(cat curl.txt | cut -f 2 -d "'" | perl -pe 's/"Definition.+?}]}}}",//g' | jq '.Id' --raw-output)
+          echo "WORKFLOW_ID: $WORKFLOW_ID"
           WORKFLOW_STATUS=$(awscurl -X GET --region us-west-2 ${WORKFLOW_API_ENDPOINT}workflow/execution/${WORKFLOW_ID} | cat | cut -f 2 -d "'" | perl -pe 's/"Definition.+?}]}}}",//g' | jq '.Status' --raw-output)
-          set +x
           echo "Waiting for workflow to complete..."
           while [ "$WORKFLOW_STATUS" = "Started" ] || [ "$WORKFLOW_STATUS" = "Queued" ]; do sleep 10; WORKFLOW_STATUS=$(awscurl -X GET --region us-west-2 ${WORKFLOW_API_ENDPOINT}workflow/execution/${WORKFLOW_ID} | cat | cut -f 2 -d "'" | perl -pe 's/"Definition.+?}]}}}",//g' | jq '.Status' --raw-output); echo -n '.'; done
-          echo "\n$WORKFLOW_STATUS"
+          echo -e "\n$WORKFLOW_STATUS"
 
       - name: Start puppeteer
         # The checkout action above changes the work dir in a way that breaks
@@ -159,13 +159,21 @@ jobs:
           echo "Downloading puppeteer tests"
           git clone https://github.com/iandow/aws-media-insights-puppeteer
           cd aws-media-insights-puppeteer
+          echo "Building puppeteer tests"
           npm i puppeteer puppeteer-screenshot-tester --quiet
-          docker build --tag=cas-puppeteer:latest .
+          docker build --tag=cas-puppeteer:latest . --quiet
+          echo "Running puppeteer tests"
           docker run --rm -v "$PWD":/usr/src/app -e WEBAPP_URL="${{ env.WEBAPP_URL }}" -e TEMP_PASSWORD="${{ env.TEMP_PASSWORD }}" cas-puppeteer:latest
 
-      - name: Clean the test environment
-        run: |
-          STACK_NAME="pr${SHORT_SHA}"
-          aws cloudformation delete-stack --stack-name $STACK_NAME --region $REGION
-          aws cloudformation wait stack-delete-complete --stack-name $STACK_NAME
-          aws s3 ls | awk '{print $3}' | grep $STACK_NAME  | xargs -I{} aws s3 rb s3://{} --force
+#      - name: Clean the test environment
+#        run: |
+#          STACK_NAME="pr${SHORT_SHA}"
+#          echo "Removing $STACK_NAME"
+#          aws cloudformation delete-stack --stack-name $STACK_NAME --region $REGION
+#          echo "Waiting for stack to delete..."
+#          aws cloudformation wait stack-delete-complete --stack-name $STACK_NAME
+#          echo "Removing $STACK_NAME S3 buckets:"
+#          aws s3 ls | awk '{print $3}' | grep $STACK_NAME  | while read line; do
+#          echo "s3://$line;
+#          aws s3 rb s3://{} --force > /dev/null;
+#          done
