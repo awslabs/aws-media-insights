@@ -161,10 +161,7 @@ jobs:
         # explicitly here.
         working-directory: /home/runner/work/
         run: |
-          echo "Downloading puppeteer tests"
-          git clone https://github.com/iandow/aws-media-insights-puppeteer
-          cd aws-media-insights-puppeteer
-          echo "Building puppeteer tests"
+          cd aws-media-insights/aws-media-insights/test/
           npm i puppeteer puppeteer-screenshot-tester --quiet
           docker build --tag=cas-puppeteer:latest . --quiet
           echo "Running puppeteer tests"
