@@ -163,7 +163,7 @@ jobs:
         run: |
           echo "Downloading puppeteer tests"
           git clone https://github.com/awslabs/aws-media-insights
-          cd test
+          cd aws-media-insights/test
           echo "Building puppeteer tests"
           npm i puppeteer puppeteer-screenshot-tester --quiet
           docker build --tag=cas-puppeteer:latest . --quiet
