@@ -2,8 +2,8 @@ name: pr-workflow
 
 on:
   pull_request:
-    branches:
-      - development
+    branches: [ development ]
+
   workflow_dispatch:
     inputs:
       remove_stack:
@@ -161,9 +161,8 @@ jobs:
         # explicitly here.
         working-directory: /home/runner/work/
         run: |
-          echo "Downloading puppeteer tests"
-          git clone https://github.com/iandow/aws-media-insights-puppeteer
-          cd aws-media-insights-puppeteer
+          cp -R ./aws-media-insights/aws-media-insights/test .
+          cd test/
           echo "Building puppeteer tests"
           npm i puppeteer puppeteer-screenshot-tester --quiet
           docker build --tag=cas-puppeteer:latest . --quiet
