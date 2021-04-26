@@ -51,17 +51,15 @@ jobs:
           STACK_NAME="pr${SHORT_SHA}"
           set -x
 
-          # If STACK_NAME already exists then delete it.
+          # Delete STACK_NAME if it already exists.
           # This is necessary in order to rerun github action workflows.
-          set -o pipefail
-          aws cloudformation describe-stacks --stack-name $STACK_NAME --region $REGION 2>&1 | grep "does not exist" > /dev/null
-          if [ $? -ne 0 ]; then
-            echo "$STACK_NAME stack already exists."
-            echo "Removing stack $STACK_NAME";
+          # If $STACK_NAME exists...
+          if [ $(echo $(aws cloudformation list-stacks --query 'StackSummaries[?StackName==`$STACK_NAME`]' --output text)  | tr -d '\n' | wc -c) > 0 ]; then
+            # Then delete $STACK_NAME...
+            echo "Removing $STACK_NAME so we can use that stack name again"
             aws cloudformation delete-stack --stack-name $STACK_NAME --region $REGION
             aws cloudformation wait stack-delete-complete --stack-name $STACK_NAME
           fi
-          set +o pipefail
 
           aws cloudformation create-stack --stack-name $STACK_NAME --template-url $TEMPLATE --region $REGION --parameters ParameterKey=AdminEmail,ParameterValue=$EMAIL --capabilities CAPABILITY_IAM CAPABILITY_NAMED_IAM CAPABILITY_AUTO_EXPAND --disable-rollback
           aws cloudformation wait stack-create-complete --stack-name $STACK_NAME
