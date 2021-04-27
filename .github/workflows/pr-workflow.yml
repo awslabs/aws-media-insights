@@ -51,12 +51,12 @@ jobs:
           STACK_NAME="pr${SHORT_SHA}"
           set -x
 
-          # Delete STACK_NAME if it already exists.
+          # If STACK_NAME already exists then delete it.
           # This is necessary in order to rerun github action workflows.
-          # If $STACK_NAME exists...
-          if [ $(echo $(aws cloudformation list-stacks --query 'StackSummaries[?StackName==`$STACK_NAME`]' --output text)  | tr -d '\n' | wc -c) > 0 ]; then
-            # Then delete $STACK_NAME...
-            echo "Removing $STACK_NAME so we can use that stack name again"
+          aws cloudformation describe-stacks --stack-name $STACK_NAME --region $REGION 2>&1 | grep "does not exist" > /dev/null
+          if [ $? -ne 0 ]; then
+            echo "$STACK_NAME stack already exists."
+            echo "Removing stack $STACK_NAME";
             aws cloudformation delete-stack --stack-name $STACK_NAME --region $REGION
             aws cloudformation wait stack-delete-complete --stack-name $STACK_NAME
           fi
@@ -101,7 +101,7 @@ jobs:
         run: |
           STACK_NAME="pr${SHORT_SHA}"
           # Get the workflow api endpoint
-          MIE_STACK_NAME=$(aws cloudformation list-stacks --query 'StackSummaries[?starts_with(StackName,`'$STACK_NAME'-MieStack`)].StackName' --output json --region $REGION | grep MieStack | cut -f 2 -d '"' | tail -n 1)
+          MIE_STACK_NAME=$(aws cloudformation list-stacks --query 'StackSummaries[?starts_with(StackName,`'$STACK_NAME'-MieStack`) && StackStatus==`CREATE_COMPLETE`]' --output json --region $REGION | grep MieStack | cut -f 2 -d '"' | tail -n 1)
           WORKFLOW_API_ENDPOINT=$(aws cloudformation describe-stacks --stack-name "$MIE_STACK_NAME" --region $REGION --query "Stacks[0].Outputs[?OutputKey=='WorkflowApiEndpoint'].OutputValue" --output text)
           DATAPLANE_BUCKET=$(aws cloudformation describe-stacks --stack-name "$MIE_STACK_NAME" --region $REGION --query "Stacks[0].Outputs[?OutputKey=='DataplaneBucket'].OutputValue" --output text)
           # Upload a test video file
@@ -164,7 +164,8 @@ jobs:
           cp -R ./aws-media-insights/aws-media-insights/test .
           cd test/
           echo "Building puppeteer tests"
-          npm i puppeteer puppeteer-screenshot-tester --quiet
+          npm init -y
+          npm i puppeteer --quiet
           docker build --tag=cas-puppeteer:latest . --quiet
           echo "Running puppeteer tests"
           docker run --rm -v "$PWD":/usr/src/app -e WEBAPP_URL="${{ env.WEBAPP_URL }}" -e TEMP_PASSWORD="${{ env.TEMP_PASSWORD }}" cas-puppeteer:latest
