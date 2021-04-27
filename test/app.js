@@ -1,52 +1,10 @@
 const puppeteer = require('puppeteer');
-const ScreenshotTester = require('puppeteer-screenshot-tester')
 const { promisify } = require('util')
-const sleep = promisify(setTimeout)
 
 let url = process.env.WEBAPP_URL;
 let temp_password = process.env.TEMP_PASSWORD;
 
 (async () => {
-    const test_screenshot = await ScreenshotTester(0.8, false, false, [], {
-        transparency: 0.5
-    })
-
-    const test_collection_screenshot = await ScreenshotTester(
-        0.1, // threshold
-        false, // anti-aliasing
-        false, // ignore colors
-        {
-            ignoreRectangles: [[36, 335, 169, 106], [649, 345, 372, 54], [568, 428, 170, 85]],
-        }, // rectangles
-        {
-            transparency: 0.5
-        }
-    )
-
-    const test_screenshot_containing_video = await ScreenshotTester(
-        0.1, // threshold
-        false, // anti-aliasing
-        false, // ignore colors
-        {
-            ignoreRectangles: [[670, 95, 583, 331], [648, 657, 403, 27]],
-        }, // rectangles
-        {
-            transparency: 0.5
-        }
-    )
-
-    const test_words_screenshot = await ScreenshotTester(
-        0.1, // threshold
-        false, // anti-aliasing
-        false, // ignore colors
-        {
-            ignoreRectangles: [[670, 95, 583, 331], [648, 657, 403, 27], [15, 284, 610, 70]],
-        }, // rectangles
-        {
-            transparency: 0.5
-        }
-    )
-
     console.log("Loading " + url)
     // Chromium doesn't support video playback, so use Chrome instead
     // uncomment this when testing on a laptop:
@@ -63,9 +21,6 @@ let temp_password = process.env.TEMP_PASSWORD;
     await page.type('input', 's3sink@bigendiandata.com')
     // Type in the password
     await page.type('#app > div > div > div > div.Section__sectionBody___3DCrX > div:nth-child(2) > input', temp_password)
-    // console.log("Validating auth form: "+await test_screenshot(page, 'screenshot00_authentication', {
-    //     fullPage: true,
-    // }))
 
     console.log("Page title: " + await page.title())
     console.log("Authenticating")
@@ -73,7 +28,6 @@ let temp_password = process.env.TEMP_PASSWORD;
     await Promise.all([
         page.click("button"),
         page.waitForTimeout(2000)
-        // page.waitForNavigation({ waitUntil: 'networkidle0' }),
     ]);
 
     // Are we on the password reset page?
@@ -156,10 +110,6 @@ let temp_password = process.env.TEMP_PASSWORD;
         console.error(e)
         process.exit(-1)
     }
-    // console.log("validating objects: "+await test_screenshot_containing_video(page, 'screenshot02_tab_objects',   {
-    // fullPage: true,
-    // }))
-
 
     // VALIDATE CELEBRITY TAB
     let tab_selector='#__BVID__28___BV_tab_button__'
@@ -182,10 +132,6 @@ let temp_password = process.env.TEMP_PASSWORD;
         console.error(e)
         process.exit(-1)
     }
-    // console.log("validating celebrities: "+await test_screenshot_containing_video(page, 'screenshot03_tab_celebrities', {
-    //     fullPage: true,
-    // }))
-
 
     // VALIDATE FACES TAB
     tab_selector='#__BVID__32___BV_tab_button__'
@@ -208,9 +154,6 @@ let temp_password = process.env.TEMP_PASSWORD;
         console.error(e)
         process.exit(-1)
     }
-    // console.log("validating faces: "+await test_screenshot_containing_video(page, 'screenshot05_tab_faces', {
-    //     fullPage: true,
-    // }))
 
     // VALIDATE WORDS TAB
     tab_selector='#__BVID__34___BV_tab_button__'
@@ -233,9 +176,6 @@ let temp_password = process.env.TEMP_PASSWORD;
         console.error(e)
         process.exit(-1)
     }
-    // console.log("validating words: "+await test_words_screenshot(page, 'screenshot06_tab_words', {
-    //     fullPage: true,
-    // }))
 
     // VALIDATE CUES TAB
     console.log("Loading cues tab")
@@ -255,9 +195,6 @@ let temp_password = process.env.TEMP_PASSWORD;
         console.error(e)
         process.exit(-1)
     }
-    // console.log("validating cues: "+await test_screenshot_containing_video(page, 'screenshot07_tab_cues', {
-    //     fullPage: true,
-    // }))
 
     // VALIDATE SHOTS TAB
     console.log("Loading shots tab")
@@ -277,9 +214,6 @@ let temp_password = process.env.TEMP_PASSWORD;
         console.error(e)
         process.exit(-1)
     }
-    // console.log("validating shots: "+await test_screenshot_containing_video(page, 'screenshot08_tab_shots', {
-    //     fullPage: true,
-    // }))
 
     // VALIDATE TRANSCRIPT TAB
     console.log("Loading transcript tab")
@@ -298,9 +232,6 @@ let temp_password = process.env.TEMP_PASSWORD;
         console.error(e)
         process.exit(-1)
     }
-    // console.log("validating transcript: "+await test_screenshot_containing_video(page, 'screenshot09_transcript', {
-    //   fullPage: true,
-    // }))
 
     // VALIDATE TRANSLATION TAB
     console.log("Loading translation tab")
@@ -319,9 +250,6 @@ let temp_password = process.env.TEMP_PASSWORD;
         console.error(e)
         process.exit(-1)
     }
-    // console.log("validating translation: "+await test_screenshot_containing_video(page, 'screenshot10_translation', {
-    //   fullPage: true,
-    // }))
 
     // VALIDATE KEY PHRASES TAB
     console.log("Loading key phrases tab")
@@ -341,9 +269,6 @@ let temp_password = process.env.TEMP_PASSWORD;
         console.error(e)
         process.exit(-1)
     }
-    // console.log("validating key phrases: "+await test_screenshot_containing_video(page, 'screenshot11_keyphrases', {
-    //   fullPage: true,
-    // }))
 
     // VALIDATE ENTITIES TAB
     console.log("Loading entities tab")
@@ -363,37 +288,6 @@ let temp_password = process.env.TEMP_PASSWORD;
         console.error(e)
         process.exit(-1)
     }
-    // console.log("validating entities: "+await test_screenshot_containing_video(page, 'screenshot12_entities', {
-    //   fullPage: true,
-    // }))
-
-    // VALIDATE UPLOAD PAGE
-    console.log("Loading upload page")
-    upload_menu_selector='#nav-collapse > ul > li:nth-child(1) > a'
-    await page.click(upload_menu_selector)
-    await page.waitForTimeout(3000)
-    // page.once('load', () => console.log('Upload page loaded'));
-    await page.waitForSelector('#app > div > div.container > div.container > div > div > button.btn.m-1.btn-secondary.collapsed', {
-        visible: true,
-    });
-    // Does the configure workflow form look right?
-    await page.click('#app > div > div.container > div.container > div > div > button.btn.m-1.btn-secondary.collapsed');
-    await page.waitForTimeout(500)
-    console.log("Validating workflow config form: "+await test_screenshot_containing_video(page, 'screenshot13_configure_workflow_form_default', {
-        fullPage: true,
-    }))
-
-    await page.click('#collapse-2 > div > div:nth-child(2) > button:nth-child(2)');
-    await page.waitForTimeout(500)
-    console.log("Validating clear all button: "+await test_screenshot_containing_video(page, 'screenshot14_configure_workflow_form_clear_all', {
-        fullPage: true,
-    }))
-
-    await page.click('#collapse-2 > div > div:nth-child(2) > button:nth-child(1)');
-    await page.waitForTimeout(500)
-    console.log("Validating select all button: "+await test_screenshot(page, 'screenshot15_configure_workflow_form_select_all', {
-        fullPage: true,
-    }))
 
     await browser.close();
     console.log("Done")
