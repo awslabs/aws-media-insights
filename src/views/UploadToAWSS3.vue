@@ -131,14 +131,15 @@
                   <b-form-select v-model="targetLanguageCode" :options="translateLanguages"></b-form-select>
                 </div>
                 <b-form-checkbox
-                    v-if="enabledOperators.includes('ComprehendEntities') || enabledOperators.includes('ComprehendKeyPhrases')"
-                    v-model="ComprehendEncryption">
+                  v-if="enabledOperators.includes('ComprehendEntities') || enabledOperators.includes('ComprehendKeyPhrases')"
+                  v-model="ComprehendEncryption"
+                >
                   Encrypt Comprehend job
                 </b-form-checkbox>
                 <b-form-input
-                    v-if="ComprehendEncryption && (enabledOperators.includes('ComprehendEntities') || enabledOperators.includes('ComprehendKeyPhrases'))"
-                    v-model="kmsKeyId"
-                    placeholder="Enter KMS key ID"
+                  v-if="ComprehendEncryption && (enabledOperators.includes('ComprehendEntities') || enabledOperators.includes('ComprehendKeyPhrases'))"
+                  v-model="kmsKeyId"
+                  placeholder="Enter KMS key ID"
                 ></b-form-input>
               </b-form-group>
               <div v-if="textFormError" style="color:red">
