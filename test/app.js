@@ -98,6 +98,7 @@ let temp_password = process.env.TEMP_PASSWORD;
 
     await page.waitForTimeout(5000)
 
+
     // Validate that the catalog table is not empty
     tableEmptyMessageSelector = "tbody > tr > td > div > div"
     try {
@@ -133,7 +134,7 @@ let temp_password = process.env.TEMP_PASSWORD;
     }
 
     // VALIDATE OBJECTS TAB
-    console.log("Loading objects tab.")
+    console.log("Loading objects tab")
     try {
         await page.click('tbody > tr:nth-child(1) > td:nth-child(6) > a');
         // validate that the video loads
@@ -162,7 +163,7 @@ let temp_password = process.env.TEMP_PASSWORD;
 
     // VALIDATE CELEBRITY TAB
     let tab_selector='#__BVID__28___BV_tab_button__'
-    console.log("Loading celebrity tab.")
+    console.log("Loading celebrity tab")
     try {
         await page.click(tab_selector);
         // Validate that rounded buttons are present
@@ -188,7 +189,7 @@ let temp_password = process.env.TEMP_PASSWORD;
 
     // VALIDATE FACES TAB
     tab_selector='#__BVID__32___BV_tab_button__'
-    console.log("Loading faces tab.")
+    console.log("Loading faces tab")
     try {
         await page.click(tab_selector);
         // Validate that rounded buttons are present
@@ -213,7 +214,7 @@ let temp_password = process.env.TEMP_PASSWORD;
 
     // VALIDATE WORDS TAB
     tab_selector='#__BVID__34___BV_tab_button__'
-    console.log("Loading words tab.")
+    console.log("Loading words tab")
     try {
         await page.click(tab_selector);
         // Validate that rounded buttons are present
@@ -237,76 +238,160 @@ let temp_password = process.env.TEMP_PASSWORD;
     // }))
 
     // VALIDATE CUES TAB
+    console.log("Loading cues tab")
     tab_selector='#__BVID__36___BV_tab_button__'
-    await page.click(tab_selector)
-    await page.waitForTimeout(3000)
+    try {
+        await page.click(tab_selector);
+        // Validate that the data table has more than one row
+        data_table_xpath = '/html/body/div/div/div[2]/div/div[1]/div[2]/div/div/div/table/tbody/tr'
+        if (await page.waitForXPath(data_table_xpath) === null) {
+            throw new Error("Missing results")
+        }
+        data_table = await page.$x(data_table_xpath);
+        let validated = (data_table.length > 0)
+        console.log("Data table length: " + data_table.length)
+        if (!validated) throw new Error("Missing results")
+    } catch (e) {
+        console.error(e)
+        process.exit(-1)
+    }
     // console.log("validating cues: "+await test_screenshot_containing_video(page, 'screenshot07_tab_cues', {
     //     fullPage: true,
     // }))
 
     // VALIDATE SHOTS TAB
+    console.log("Loading shots tab")
     tab_selector='#__BVID__38___BV_tab_button__'
-    await page.click(tab_selector)
-    await page.waitForTimeout(3000)
+    try {
+        await page.click(tab_selector);
+        // Validate that the data table has more than one row
+        data_table_xpath = '/html/body/div/div/div[2]/div/div[1]/div[2]/div/div/div/table/tbody/tr'
+        if (await page.waitForXPath(data_table_xpath) === null) {
+            throw new Error("Missing results")
+        }
+        data_table = await page.$x(data_table_xpath);
+        let validated = (data_table.length > 0)
+        console.log("Data table length: " + data_table.length)
+        if (!validated) throw new Error("Missing results")
+    } catch (e) {
+        console.error(e)
+        process.exit(-1)
+    }
     // console.log("validating shots: "+await test_screenshot_containing_video(page, 'screenshot08_tab_shots', {
     //     fullPage: true,
     // }))
 
     // VALIDATE TRANSCRIPT TAB
+    console.log("Loading transcript tab")
     tab_selector='#__BVID__40___BV_tab_button__'
-    await page.click(tab_selector)
-    await page.waitForTimeout(3000)
+    try {
+        await page.click(tab_selector);
+        await page.waitForTimeout(2000)
+        let selector = '#app > div > div.container-fluid > div > div:nth-child(1) > div:nth-child(2) > div > div'
+        await page.waitForSelector(selector)
+        let text_value = await page.$eval(selector, el => el.textContent)
+        num_words = text_value.split( " ").length
+        let validated = ( num_words > 10)
+        console.log("Results summary: (" + num_words + " words)")
+        if (!validated) throw new Error("Missing results")
+    } catch (e) {
+        console.error(e)
+        process.exit(-1)
+    }
     // console.log("validating transcript: "+await test_screenshot_containing_video(page, 'screenshot09_transcript', {
     //   fullPage: true,
     // }))
 
     // VALIDATE TRANSLATION TAB
+    console.log("Loading translation tab")
     tab_selector='#__BVID__45___BV_tab_button__'
-    await page.click(tab_selector)
-    await page.waitForTimeout(3000)
+    try {
+        await page.click(tab_selector);
+        await page.waitForTimeout(2000)
+        let selector = '#app > div > div.container-fluid > div > div:nth-child(1) > div:nth-child(2) > div > div'
+        await page.waitForSelector(selector)
+        let text_value = await page.$eval(selector, el => el.textContent)
+        num_words = text_value.split( " ").length
+        let validated = ( num_words > 10)
+        console.log("Results summary: (" + num_words + " words)")
+        if (!validated) throw new Error("Missing results")
+    } catch (e) {
+        console.error(e)
+        process.exit(-1)
+    }
     // console.log("validating translation: "+await test_screenshot_containing_video(page, 'screenshot10_translation', {
     //   fullPage: true,
     // }))
 
-    // VALIDATE TRANSLATE TAB
+    // VALIDATE KEY PHRASES TAB
+    console.log("Loading key phrases tab")
     tab_selector='#__BVID__47___BV_tab_button__'
-    await page.click(tab_selector)
-    await page.waitForTimeout(3000)
+    try {
+        await page.click(tab_selector);
+        // Validate that the data table has more than one row
+        data_table_xpath = '/html/body/div/div/div[2]/div/div[1]/div[2]/div/div[2]/div/table/tbody/tr'
+        if (await page.waitForXPath(data_table_xpath) === null) {
+            throw new Error("Missing results")
+        }
+        data_table = await page.$x(data_table_xpath);
+        let validated = (data_table.length > 0)
+        console.log("Results summary: (" + data_table.length + " table records)")
+        if (!validated) throw new Error("Missing results")
+    } catch (e) {
+        console.error(e)
+        process.exit(-1)
+    }
     // console.log("validating key phrases: "+await test_screenshot_containing_video(page, 'screenshot11_keyphrases', {
     //   fullPage: true,
     // }))
 
-    // VALIDATE TRANSLATE TAB
+    // VALIDATE ENTITIES TAB
+    console.log("Loading entities tab")
     tab_selector='#__BVID__49___BV_tab_button__'
-    await page.click(tab_selector)
-    await page.waitForTimeout(3000)
+    try {
+        await page.click(tab_selector);
+        // Validate that the data table has more than one row
+        data_table_xpath = '/html/body/div/div/div[2]/div/div[1]/div[2]/div/div[2]/div/table/tbody/tr'
+        if (await page.waitForXPath(data_table_xpath) === null) {
+            throw new Error("Missing results")
+        }
+        data_table = await page.$x(data_table_xpath);
+        let validated = (data_table.length > 0)
+        console.log("Results summary: (" + data_table.length + " table records)")
+        if (!validated) throw new Error("Missing results")
+    } catch (e) {
+        console.error(e)
+        process.exit(-1)
+    }
     // console.log("validating entities: "+await test_screenshot_containing_video(page, 'screenshot12_entities', {
     //   fullPage: true,
     // }))
 
-  // VALIDATE UPLOAD PAGE
-    await page.goto(url + "/upload", {waitUntil: 'load'});
+    // VALIDATE UPLOAD PAGE
+    console.log("Loading upload page")
+    upload_menu_selector='#nav-collapse > ul > li:nth-child(1) > a'
+    await page.click(upload_menu_selector)
+    await page.waitForTimeout(3000)
+    // page.once('load', () => console.log('Upload page loaded'));
     await page.waitForSelector('#app > div > div.container > div.container > div > div > button.btn.m-1.btn-secondary.collapsed', {
         visible: true,
     });
-    page.once('load', () => console.log('Upload page loaded'));
-
     // Does the configure workflow form look right?
     await page.click('#app > div > div.container > div.container > div > div > button.btn.m-1.btn-secondary.collapsed');
     await page.waitForTimeout(500)
-    console.log("validating upload page: "+await test_screenshot_containing_video(page, 'screenshot13_configure_workflow_form_default', {
+    console.log("Validating workflow config form: "+await test_screenshot_containing_video(page, 'screenshot13_configure_workflow_form_default', {
         fullPage: true,
     }))
 
     await page.click('#collapse-2 > div > div:nth-child(2) > button:nth-child(2)');
     await page.waitForTimeout(500)
-    console.log("validating workflow config form: "+await test_screenshot_containing_video(page, 'screenshot14_configure_workflow_form_clear_all', {
+    console.log("Validating clear all button: "+await test_screenshot_containing_video(page, 'screenshot14_configure_workflow_form_clear_all', {
         fullPage: true,
     }))
 
     await page.click('#collapse-2 > div > div:nth-child(2) > button:nth-child(1)');
     await page.waitForTimeout(500)
-    console.log("validating clear all: "+await test_screenshot(page, 'screenshot15_configure_workflow_form_select_all', {
+    console.log("Validating select all button: "+await test_screenshot(page, 'screenshot15_configure_workflow_form_select_all', {
         fullPage: true,
     }))
 
