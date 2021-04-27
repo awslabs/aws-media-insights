@@ -98,8 +98,6 @@ cp "$template_dir/aws-content-analysis-video-workflow.yaml" "$dist_dir/aws-conte
 cp "$template_dir/aws-content-analysis-image-workflow.yaml" "$dist_dir/aws-content-analysis-image-workflow.template"
 cp "$template_dir/aws-content-analysis-image-workflow.yaml" "$dist_dir/aws-content-analysis-image-workflow.template"
 cp "$template_dir/aws-content-analysis-use-existing-mie-stack.yaml" "$dist_dir/aws-content-analysis-use-existing-mie-stack.template"
-cp "$template_dir/string.yaml" "$dist_dir/string.template"
-
 
 find "$dist_dir"
 
