@@ -72,7 +72,7 @@ let temp_password = process.env.TEMP_PASSWORD;
     console.log("Validating that the first asset's workflow is Complete")
     const assetWorkflowStatusSelector = "td.tableWordWrap:nth-child(3) > a:nth-child(1)"
     try {
-        await page.waitForSelector(assetWorkflowStatusSelector, {polling: 1000, timeout: 3000})
+        await page.waitForSelector(assetWorkflowStatusSelector, {polling: 1000, timeout: 10000})
     } catch (e) {
         console.log('Missing expected asset workflow status.\n' + e)
     }
