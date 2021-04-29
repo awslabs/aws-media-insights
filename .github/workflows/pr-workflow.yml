@@ -101,7 +101,7 @@ jobs:
         run: |
           STACK_NAME="pr${SHORT_SHA}"
           # Get the workflow api endpoint
-          MIE_STACK_NAME=$(aws cloudformation list-stacks --query 'StackSummaries[?starts_with(StackName,`'$STACK_NAME'-MieStack`)].StackName' --output json --region $REGION | grep MieStack | cut -f 2 -d '"' | tail -n 1)
+          MIE_STACK_NAME=$(aws cloudformation list-stacks --query 'StackSummaries[?starts_with(StackName,`'$STACK_NAME'-MieStack`) && StackStatus==`CREATE_COMPLETE`].StackName' --output json --region $REGION | grep MieStack | cut -f 2 -d '"' | tail -n 1)
           WORKFLOW_API_ENDPOINT=$(aws cloudformation describe-stacks --stack-name "$MIE_STACK_NAME" --region $REGION --query "Stacks[0].Outputs[?OutputKey=='WorkflowApiEndpoint'].OutputValue" --output text)
           DATAPLANE_BUCKET=$(aws cloudformation describe-stacks --stack-name "$MIE_STACK_NAME" --region $REGION --query "Stacks[0].Outputs[?OutputKey=='DataplaneBucket'].OutputValue" --output text)
           # Upload a test video file
