@@ -21,7 +21,7 @@ Parameters:
 Mappings:
   MediaInsightsEngine:
     Release:
-      Version: "v2.0.4"
+      Version: "v2.0.5"
   ContentAnalysisApp:
     SourceCode:
       S3Bucket: "%%BUCKET_NAME%%"
@@ -43,7 +43,7 @@ Resources:
           - ".s3."
           - !Ref AWS::Region
           - ".amazonaws.com/"
-          - "media_insights_engine/"
+          - "aws-media-insights-engine/"
           - !FindInMap
             - MediaInsightsEngine
             - Release
