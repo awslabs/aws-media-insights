@@ -97,20 +97,18 @@
                       <div v-if="data.item.status === 'Queued'">{{ data.item.status }}</div>
                     </template>
                     <template v-slot:cell(Actions)="data">
-                      <b-button
-                        variant="orange"
+                      <b-link
                         :href="(`/analysis/${data.item.asset_id}`)"
                       >
                         Analyze
-                      </b-button>
-                      &nbsp;
-                      <b-button
-                        :pressed="false"
-                        variant="red"
+                      </b-link>
+                      <br>
+                      <b-link
+                        class="text-danger"
                         @click="deleteAsset(`${data.item.asset_id}`)"
                       >
                         Delete
-                      </b-button>
+                      </b-link>
                     </template>
                   </b-table>
                   <div
