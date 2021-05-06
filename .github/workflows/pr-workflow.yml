@@ -2,7 +2,6 @@ name: pr-workflow
 
 on:
   pull_request:
-    branches: [ development ]
 
   workflow_dispatch:
     inputs:
