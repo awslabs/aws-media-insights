@@ -157,23 +157,10 @@ export default {
     this.dropzone.on('errormultiple', function(files, message, xhr) {
       vm.$emit('vdropzone-error-multiple', files, message, xhr)
     })
-
-    this.dropzone.on('sending', function(file, xhr, formData) {
-      if (vm.isS3) {
-        if (vm.isS3OverridesServerPropagation) {
-          let signature = file.s3Signature;
-          Object.keys(signature).forEach(function (key) {
-            formData.append(key, signature[key]);
-          });
-        } else {
-          let signature = file.s3ObjectLocation.fields;
-          Object.keys(signature).forEach(function (key) {
-            formData.append(key, signature[key]);
-          });
-        }
-      }
-      vm.$emit('vdropzone-sending', file, xhr, formData)
-    })
+    delete this.dropzone['submitRequest'];
+    this.dropzone.submitRequest = function() {
+      console.log("Dropzone's xhr formatted upload request has been replaced by an Amplify API call.")
+    };
 
     this.dropzone.on('sendingmultiple', function(file, xhr, formData) {
       vm.$emit('vdropzone-sending-multiple', file, xhr, formData)
@@ -284,6 +271,8 @@ export default {
       this.dropzone.removeAllFiles(bool)
     },
     processQueue: function() {
+      console.log("in processQueue")
+      const vm = this;
       let dropzoneEle = this.dropzone;
       if (this.isS3 && !this.wasQueueAutoProcess) {
         this.getQueuedFiles().forEach((file) => {
@@ -293,11 +282,18 @@ export default {
         this.dropzone.processQueue();
       }
       this.dropzone.on("success", function() {
+        console.log("got event: success")
         dropzoneEle.options.autoProcessQueue = true
       });
       this.dropzone.on('queuecomplete', function() {
+        console.log("got event: queuecomplete")
         dropzoneEle.options.autoProcessQueue = false
-      })
+      });
+      this.dropzone.on('removedfile', function(file) {
+        console.log("canceling...")
+        vm.$Amplify.Storage.cancel(file.send_promise, "The user canceled this upload.");
+      });
+
     },
     init: function() {
       return this.dropzone.init();
@@ -360,36 +356,89 @@ export default {
       return this.dropzone.getActiveFiles()
     },
     async getSignedAndUploadToS3(file) {
-      const token = await this.$Amplify.Auth.currentSession().then(data =>{
-        var accessToken = data.getIdToken().getJwtToken()
-        return accessToken
-      })
-      this.awss3.token = token
-      var promise = awsEndpoint.sendFile(file, this.awss3, token, this.isS3OverridesServerPropagation);
-        if (!this.isS3OverridesServerPropagation) {
-          promise.then((response) => {
-            if (response.success) {
-              file.s3ObjectLocation = response.message
-              // set dropzone url option to the URL in the get_presigned_url() response
-              this.dropzone.options.url = response.message.url
-              setTimeout(() => this.dropzone.processFile(file))
-              this.$emit('vdropzone-s3-upload-success', response.message);
-            } else {
-              if ('undefined' !== typeof response.message) {
-                this.$emit('vdropzone-s3-upload-error', response.message);
-              } else {
-                this.$emit('vdropzone-s3-upload-error', "Network Error : Could not send request to AWS. (Maybe CORS error)");
-              }
-            }
-          });
-        } else {
-          promise.then(() => {
-            setTimeout(() => this.dropzone.processFile(file))
-        });
+      console.log("getSignedAndUploadToS3")
+      let key = 'upload/' + file.name
+      let vm = this
+      this.dropzone.emit("processing", file);
+      file.status = this.dropzone.UPLOADING;
+      file.processing = true;
+      let promise = null;
+      try {
+        promise = this.$Amplify.Storage.put(key, file, {
+          level: 'public', // not actually public in the S3 sense, this is just an amplify construct
+          progressCallback(progress) {
+            vm.isUploading = true
+            vm.uploadValue = 0
+            const totalUploadProgress = (progress.loaded / progress.total) * 100
+            const bytesSent = progress.loaded
+            file.send_promise = promise
+            vm.dropzone.emit(
+                "uploadprogress",
+                file,
+                totalUploadProgress,
+                bytesSent
+            );
+          },
+        })
+        await promise;
+        promise.then((response) => {
+          if (response.key !== undefined) {
+            console.log("Upload complete")
+            // file.s3ObjectLocation = response.message
+            // set dropzone url option to the URL in the get_presigned_url() response
+            // setTimeout(() => this.dropzone.processFile(file))
+            // this.$emit('vdropzone-s3-upload-success', key);
+            file.status = vm.dropzone.SUCCESS;
+            file.s3_key = response.key
+            console.log("file")
+            console.log(file)
+            vm.dropzone.emit("success", file, "", null);
+            vm.dropzone.emit("complete", file);
+          } else {
+            vm.dropzone.emit('vdropzone-s3-upload-error');
+          }
+        })
+      } catch (err) {
+        console.log("Error: " + err)
+        // file.status = vm.dropzone.SUCCESS;
+        vm.isUploading = null
+        vm.uploadValue = null
+        vm.file = null
       }
-      promise.catch((error) => {
-        alert(error)
-      });
+
+      setTimeout(() => this.dropzone.processFile(file))
+      this.$emit('vdropzone-s3-upload-success');
+      /**************/
+      // const token = await this.$Amplify.Auth.currentSession().then(data =>{
+      //   var accessToken = data.getIdToken().getJwtToken()
+      //   return accessToken
+      // })
+      // this.awss3.token = token
+      // var promise = awsEndpoint.sendFile(file, this.awss3, token, this.isS3OverridesServerPropagation);
+      //   if (!this.isS3OverridesServerPropagation) {
+      //     promise.then((response) => {
+      //       if (response.success) {
+      //         file.s3ObjectLocation = response.message
+      //         // set dropzone url option to the URL in the get_presigned_url() response
+      //         this.dropzone.options.url = response.message.url
+      //         setTimeout(() => this.dropzone.processFile(file))
+      //         this.$emit('vdropzone-s3-upload-success', response.message);
+      //       } else {
+      //         if ('undefined' !== typeof response.message) {
+      //           this.$emit('vdropzone-s3-upload-error', response.message);
+      //         } else {
+      //           this.$emit('vdropzone-s3-upload-error', "Network Error : Could not send request to AWS. (Maybe CORS error)");
+      //         }
+      //       }
+      //     });
+      //   } else {
+      //     promise.then(() => {
+      //       setTimeout(() => this.dropzone.processFile(file))
+      //   });
+      // }
+      // promise.catch((error) => {
+      //   alert(error)
+      // });
     },
     setAWSSigningURL(location) {
       if (this.isS3) {
