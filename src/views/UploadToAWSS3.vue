@@ -4,33 +4,33 @@
     <br>
     <b-container>
       <b-alert
-          :show="dismissCountDown"
-          dismissible
-          variant="danger"
-          @dismissed="dismissCountDown=0"
-          @dismiss-count-down="countDownChanged"
+        :show="dismissCountDown"
+        dismissible
+        variant="danger"
+        @dismissed="dismissCountDown=0"
+        @dismiss-count-down="countDownChanged"
       >
         {{ uploadErrorMessage }}
       </b-alert>
       <b-alert
-          :show="showInvalidFile"
-          variant="danger"
+        :show="showInvalidFile"
+        variant="danger"
       >
         {{ invalidFileMessages[invalidFileMessages.length-1] }}
       </b-alert>
       <h1>Upload Videos</h1>
       <p>{{ description }}</p>
       <vue-dropzone
-          id="dropzone"
-          ref="myVueDropzone"
-          :awss3="awss3"
-          :options="dropzoneOptions"
-          @vdropzone-s3-upload-error="s3UploadError"
-          @vdropzone-file-added="fileAdded"
-          @vdropzone-removed-file="fileRemoved"
-          @vdropzone-success="s3UploadComplete"
-          @vdropzone-sending="upload_in_progress=true"
-          @vdropzone-queue-complete="upload_in_progress=false"
+        id="dropzone"
+        ref="myVueDropzone"
+        :awss3="awss3"
+        :options="dropzoneOptions"
+        @vdropzone-s3-upload-error="s3UploadError"
+        @vdropzone-file-added="fileAdded"
+        @vdropzone-removed-file="fileRemoved"
+        @vdropzone-success="s3UploadComplete"
+        @vdropzone-sending="upload_in_progress=true"
+        @vdropzone-queue-complete="upload_in_progress=false"
       />
       <br>
       <b-button v-b-toggle.collapse-2 class="m-1">
@@ -44,19 +44,19 @@
       </b-button>
       <br>
       <b-button
-          :pressed="false"
-          size="sm"
-          variant="link"
-          class="text-decoration-none"
-          @click="showExecuteApi = true"
+        :pressed="false"
+        size="sm"
+        variant="link"
+        class="text-decoration-none"
+        @click="showExecuteApi = true"
       >
         Show API request to run workflow
       </b-button>
       <b-modal
-          v-model="showExecuteApi"
-          scrollable
-          title="REST API"
-          ok-only
+        v-model="showExecuteApi"
+        scrollable
+        title="REST API"
+        ok-only
       >
         <label>Request URL:</label>
         <pre v-highlightjs><code class="bash">POST {{ WORKFLOW_API_ENDPOINT }}workflow/execution</code></pre>
@@ -94,10 +94,10 @@
             <b-card header="Audio Operators">
               <b-form-group>
                 <b-form-checkbox-group
-                    id="checkbox-group-2"
-                    v-model="enabledOperators"
-                    :options="audioOperators"
-                    name="flavour-2"
+                  id="checkbox-group-2"
+                  v-model="enabledOperators"
+                  :options="audioOperators"
+                  name="flavour-2"
                 ></b-form-checkbox-group>
                 <div v-if="enabledOperators.includes('Transcribe')">
                   <label>Source Language</label>
@@ -111,10 +111,10 @@
             <b-card header="Text Operators">
               <b-form-group>
                 <b-form-checkbox-group
-                    id="checkbox-group-3"
-                    v-model="enabledOperators"
-                    :options="textOperators"
-                    name="flavour-3"
+                  id="checkbox-group-3"
+                  v-model="enabledOperators"
+                  :options="textOperators"
+                  name="flavour-3"
                 ></b-form-checkbox-group>
                 <div v-if="enabledOperators.includes('Translate')">
                   <label>Translation Source Language</label>
@@ -144,14 +144,14 @@
         Execution History
       </label>
       <b-table
-          :fields="fields"
-          bordered
-          hover
-          small
-          responsive
-          show-empty
-          fixed
-          :items="executed_assets"
+        :fields="fields"
+        bordered
+        hover
+        small
+        responsive
+        show-empty
+        fixed
+        :items="executed_assets"
       >
         <template v-slot:cell(workflow_status)="data">
           <a v-if="data.item.workflow_status !== 'Queued'" href="" @click.stop.prevent="openWindow(data.item.state_machine_console_link)">{{ data.item.workflow_status }}</a>
@@ -165,18 +165,18 @@
       </b-button>
       <br>
       <b-button
-          :pressed="false"
-          size="sm"
-          variant="link"
-          class="text-decoration-none"
-          @click="showWorkflowStatusApi = true"
+        :pressed="false"
+        size="sm"
+        variant="link"
+        class="text-decoration-none"
+        @click="showWorkflowStatusApi = true"
       >
         Show API request to get execution history
       </b-button>
       <b-modal
-          v-model="showWorkflowStatusApi"
-          title="REST API"
-          ok-only
+        v-model="showWorkflowStatusApi"
+        title="REST API"
+        ok-only
       >
         <label>Request URL:</label>
         <pre v-highlightjs><code class="bash">GET {{ WORKFLOW_API_ENDPOINT }}workflow/execution/asset/{asset_id}</code></pre>
@@ -625,27 +625,27 @@ export default {
         body: JSON.stringify(data),
         headers: {'Content-Type': 'application/json', 'Authorization': token}
       }).then(response =>
-          response.json().then(data => ({
-                data: data,
-                status: response.status
-              })
-          ).then(res => {
-            if (res.status !== 200) {
-              console.log("ERROR: Failed to start workflow.");
-              console.log(res.data.Code);
-              console.log(res.data.Message);
-              console.log("URL: " + this.WORKFLOW_API_ENDPOINT + 'workflow/execution');
-              console.log("Data:");
-              console.log(JSON.stringify(data));
-              console.log((data));
-              console.log("Response: " + response.status);
-            } else {
-              const asset_id = res.data.AssetId;
-              console.log("Media assigned asset id: " + asset_id);
-              vm.executed_assets.push({asset_id: asset_id, file_name: s3_key, workflow_status: "", state_machine_console_link: ""});
-              vm.getWorkflowStatus(asset_id);
-            }
-          })
+        response.json().then(data => ({
+              data: data,
+              status: response.status
+            })
+        ).then(res => {
+          if (res.status !== 200) {
+            console.log("ERROR: Failed to start workflow.");
+            console.log(res.data.Code);
+            console.log(res.data.Message);
+            console.log("URL: " + this.WORKFLOW_API_ENDPOINT + 'workflow/execution');
+            console.log("Data:");
+            console.log(JSON.stringify(data));
+            console.log((data));
+            console.log("Response: " + response.status);
+          } else {
+            const asset_id = res.data.AssetId;
+            console.log("Media assigned asset id: " + asset_id);
+            vm.executed_assets.push({asset_id: asset_id, file_name: s3_key, workflow_status: "", state_machine_console_link: ""});
+            vm.getWorkflowStatus(asset_id);
+          }
+        })
       )
     },
     async getWorkflowStatus(asset_id) {
@@ -692,7 +692,6 @@ export default {
     },
     uploadFiles() {
       console.log("Uploading to s3://" + this.DATAPLANE_BUCKET,);
-      const signurl = this.DATAPLANE_API_ENDPOINT + '/upload';
       this.$refs.myVueDropzone.processQueue();
     },
     clearHistory() {
