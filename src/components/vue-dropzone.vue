@@ -365,7 +365,10 @@ export default {
       let promise = null;
       try {
         promise = this.$Amplify.Storage.put(key, file, {
-          level: 'public', // not actually public in the S3 sense, this is just an amplify construct
+          level: 'public',
+          // Not actually public in the S3 sense, this is just an Amplify construct.
+          // Public makes this file accessible by all the authenticated users of this
+          // app. Files are stored under the public/ path of the dataplane S3 bucket.
           progressCallback(progress) {
             vm.isUploading = true
             vm.uploadValue = 0
@@ -382,6 +385,8 @@ export default {
         })
         await promise;
         promise.then((response) => {
+          // Amplify upload returns a {key: S3 Object key} object on success.
+          // We use that to determine whether upload was successful:
           if (response.key !== undefined) {
             console.log("Upload complete")
             // file.s3ObjectLocation = response.message
@@ -389,13 +394,14 @@ export default {
             // setTimeout(() => this.dropzone.processFile(file))
             // this.$emit('vdropzone-s3-upload-success', key);
             file.status = vm.dropzone.SUCCESS;
-            file.s3_key = response.key
+            file.s3_key = "public/"+response.key
             console.log("file")
             console.log(file)
             vm.dropzone.emit("success", file, "", null);
             vm.dropzone.emit("complete", file);
+            vm.dropzone.emit("vdropzone-s3-upload-success", "upload success");
           } else {
-            vm.dropzone.emit('vdropzone-s3-upload-error');
+            vm.dropzone.emit('vdropzone-s3-upload-error', "upload error");
           }
         })
       } catch (err) {
