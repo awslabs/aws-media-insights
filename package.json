@@ -9,12 +9,13 @@
     "deploy": "aws s3 sync --acl public-read --profile mie --delete dist/ s3://[your_website_bucket]"
   },
   "dependencies": {
-    "aws-amplify": "^3.0.11",
-    "aws-amplify-vue": "^2.1.1",
+    "aws-amplify": "^3.3.27",
+    "aws-amplify-vue": "^2.1.5",
     "axios": ">=0.21.1",
     "bad-words": "^3.0.3",
     "chart.js": "^2.9.3",
     "core-js": "^2.6.11",
+    "dropzone": "^5.7.0",
     "jquery": "^3.4.1",
     "jwt-decode": "^2.2.0",
     "lodash": "^4.17.15",
