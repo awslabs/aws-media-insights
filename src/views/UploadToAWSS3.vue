@@ -18,7 +18,7 @@
       >
         {{ invalidFileMessages[invalidFileMessages.length-1] }}
       </b-alert>
-      <h1>Upload Videos</h1>
+      <h1>Upload Content</h1>
       <p>{{ description }}</p>
       <vue-dropzone
         id="dropzone"
@@ -28,7 +28,7 @@
         @vdropzone-s3-upload-error="s3UploadError"
         @vdropzone-file-added="fileAdded"
         @vdropzone-removed-file="fileRemoved"
-        @vdropzone-success="s3UploadComplete"
+        @vdropzone-success="runWorkflow"
         @vdropzone-sending="upload_in_progress=true"
         @vdropzone-queue-complete="upload_in_progress=false"
       />
@@ -43,15 +43,16 @@
         Upload and Run Workflow
       </b-button>
       <br>
-      <b-button
-        :pressed="false"
-        size="sm"
-        variant="link"
-        class="text-decoration-none"
-        @click="showExecuteApi = true"
-      >
-        Show API request to run workflow
-      </b-button>
+      <!-- TODO: add a drop-down option in this modal to choose update workflow, then update workflowConfigWithInput to include the appropriate workflow config -->
+<!--      <b-button-->
+<!--        :pressed="false"-->
+<!--        size="sm"-->
+<!--        variant="link"-->
+<!--        class="text-decoration-none"-->
+<!--        @click="showExecuteApi = true"-->
+<!--      >-->
+<!--        Show API request to run workflow-->
+<!--      </b-button>-->
       <b-modal
         v-model="showExecuteApi"
         scrollable
@@ -181,7 +182,7 @@
         <label>Request URL:</label>
         <pre v-highlightjs><code class="bash">GET {{ WORKFLOW_API_ENDPOINT }}workflow/execution/asset/{asset_id}</code></pre>
         <label>Sample command:</label>
-        <p>Be sure to replace "{asset_id}" with a valid asset ID.</p>
+        <p>Be sure to replace <b>{asset_id}</b> with a valid asset ID.</p>
         <pre v-highlightjs="curlCommand2"><code class="bash"></code></pre>
       </b-modal>
     </b-container>
@@ -203,7 +204,6 @@ export default {
       restApi2: '',
       curlCommand: '',
       curlCommand2: '',
-      tokenForCurlCommand: '',
       showWorkflowStatusApi: false,
       showExecuteApi: false,
       requestURL: "",
@@ -231,23 +231,36 @@ export default {
       thumbnail_position: 10,
       invalid_file_types: 0,
       upload_in_progress: false,
-      enabledOperators: ['labelDetection', 'celebrityRecognition', 'contentModeration', 'faceDetection', 'thumbnail', 'Transcribe', 'Translate', 'ComprehendKeyPhrases', 'ComprehendEntities'],
+      enabledOperators: [
+        "labelDetection",
+        "celebrityRecognition",
+        "textDetection",
+        "contentModeration",
+        "faceDetection",
+        "thumbnail",
+        "TranscribeVideo",
+        "Translate",
+        "ComprehendKeyPhrases",
+        "ComprehendEntities",
+        "shotDetection",
+        "technicalCueDetection"
+      ],
       videoOperators: [
-        {text: 'Object Detection', value: 'labelDetection'},
-        {text: 'Celebrity Recognition', value: 'celebrityRecognition'},
-        {text: 'Content Moderation', value: 'contentModeration'},
-        {text: 'Face Detection', value: 'faceDetection'},
-        // Face search is disable because it has not yet been implemented
-        // in the analytics view.
-        // {text: 'Face Search', value: 'faceSearch'},
+        { text: "Object Detection", value: "labelDetection" },
+        { text: "Technical Cue Detection", value: "technicalCueDetection" },
+        { text: "Shot Detection", value: "shotDetection" },
+        { text: "Celebrity Recognition", value: "celebrityRecognition" },
+        { text: "Content Moderation", value: "contentModeration" },
+        { text: "Face Detection", value: "faceDetection" },
+        { text: "Word Detection", value: "textDetection" },
+        { text: "Face Search", value: "faceSearch" },
+        { text: "Generic Data Lookup (video only)", value: "genericDataLookup" }
       ],
-      audioOperators: [
-        {text: 'Transcribe', value: 'Transcribe'},
-      ],
+      audioOperators: [{ text: "Transcribe", value: "TranscribeVideo" }],
       textOperators: [
-        {text: 'Comprehend Key Phrases', value: 'ComprehendKeyPhrases'},
-        {text: 'Comprehend Entities', value: 'ComprehendEntities'},
-        {text: 'Translate', value: 'Translate'},
+        { text: "Comprehend Key Phrases", value: "ComprehendKeyPhrases" },
+        { text: "Comprehend Entities", value: "ComprehendEntities" },
+        { text: "Translate", value: "Translate" }
       ],
       faceCollectionId: "",
       genericDataFilename: "",
@@ -354,6 +367,7 @@ export default {
       dismissCountDown: 0,
       executed_assets: [],
       workflow_status_polling: null,
+      workflow_config: {},
       description: "Click start to begin. Media analysis status will be shown after upload completes.",
       s3_destination: 's3://' + this.DATAPLANE_BUCKET,
       dropzoneOptions: {
@@ -364,7 +378,7 @@ export default {
         // disable network timeouts (important for large uploads)
         timeout: 0,
         // limit max upload file size (in MB)
-        maxFilesize: 3000
+        maxFilesize: 3000,
       },
       awss3: {
         signingURL: '',
@@ -380,7 +394,12 @@ export default {
     },
     audioFormError() {
       // Validate transcribe is enabled if any text operator is enabled
-      if (!this.enabledOperators.includes("Transcribe") && (this.enabledOperators.includes("Translate") || this.enabledOperators.includes("ComprehendEntities") || this.enabledOperators.includes("ComprehendKeyPhrases"))) {
+      if (
+          !this.enabledOperators.includes("TranscribeVideo") &&
+          (this.enabledOperators.includes("Translate") ||
+              this.enabledOperators.includes("ComprehendEntities") ||
+              this.enabledOperators.includes("ComprehendKeyPhrases"))
+      ) {
         return "Transcribe must be enabled if any text operator is enabled.";
       }
       return "";
@@ -392,9 +411,8 @@ export default {
         if (this.faceCollectionId === "") {
           return "Face collection name is required.";
         }
-
         // Validate that the collection ID matches required regex
-        else if ((new RegExp('[^a-zA-Z0-9_.\\-]')).test(this.faceCollectionId)) {
+        else if (new RegExp("[^a-zA-Z0-9_.\\-]").test(this.faceCollectionId)) {
           return "Face collection name must match pattern [a-zA-Z0-9_.\\\\-]+";
         }
         // Validate that the collection ID is not too long
@@ -402,88 +420,170 @@ export default {
           return "Face collection name must have fewer than 255 characters.";
         }
       }
+      if (this.enabledOperators.includes("genericDataLookup")) {
+        // Validate that the collection ID is defined
+        if (this.genericDataFilename === "") {
+          return "Data filename is required.";
+        }
+        // Validate that the collection ID matches required regex
+        else if (!new RegExp("^.+\\.json$").test(this.genericDataFilename)) {
+          return "Data filename must have .json extension.";
+        }
+        // Validate that the data filename is not too long
+        else if (this.genericDataFilename.length > 255) {
+          return "Data filename must have fewer than 255 characters.";
+        }
+      }
       return "";
     },
     validForm() {
       let validStatus = true;
-      if (this.invalid_file_types || this.textFormError || this.audioFormError || this.videoFormError) validStatus = false;
+      if (
+          this.invalid_file_types ||
+          this.textFormError ||
+          this.audioFormError ||
+          this.videoFormError
+      )
+        validStatus = false;
       return validStatus;
     },
-    workflowConfig() {
-      return {
-        "Name": "MieCompleteWorkflow",
-        "Configuration": {
-          "defaultPrelimVideoStage": {
-            "Thumbnail": {
-              "ThumbnailPosition": this.thumbnail_position.toString(),
-              "Enabled": true
-            },
-            "Mediainfo": {
-              "Enabled": true
-            }
-          },
-          "defaultVideoStage": {
-            "faceDetection": {
-              "Enabled": this.enabledOperators.includes("faceDetection"),
-            },
-            "celebrityRecognition": {
-              "Enabled": this.enabledOperators.includes("celebrityRecognition"),
-            },
-            "labelDetection": {
-              "Enabled": this.enabledOperators.includes("labelDetection"),
-            },
-            "Mediaconvert": {
-              "Enabled": false,
-            },
-            "contentModeration": {
-              "Enabled": this.enabledOperators.includes("contentModeration"),
-            },
-            "faceSearch": {
-              // Face search is disable because it has not yet been implemented
-              // in the analytics view.
-              "Enabled": false,
-              "CollectionId": this.faceCollectionId==="" ? "undefined" : this.faceCollectionId
-            },
-            "GenericDataLookup": {
-              "Enabled": false,
-              "Bucket": this.DATAPLANE_BUCKET,
-              "Key": "undefined"
-            }
-          },
-          "defaultAudioStage": {
-            "Transcribe": {
-              "Enabled": this.enabledOperators.includes("Transcribe"),
-              "TranscribeLanguage": this.transcribeLanguage
-            }
-
-          },
-          "defaultTextStage": {
-            "Translate": {
-              "Enabled": this.enabledOperators.includes("Translate"),
-              "SourceLanguageCode": this.transcribeLanguage.split('-')[0],
-              "TargetLanguageCode": this.targetLanguageCode
-            },
-            "ComprehendEntities": {
-              "Enabled": this.enabledOperators.includes("ComprehendEntities"),
-            },
-            "ComprehendKeyPhrases": {
-              "Enabled": this.enabledOperators.includes("ComprehendKeyPhrases"),
-            }
-
-          },
-          "defaultTextSynthesisStage": {
-            // Polly is available in the MIECompleteWorkflow but not used in the front-end, so we've disabled it here.
-            "Polly": {
-              "Enabled": false,
-            }
-          }
-        },
+    imageWorkflowConfig() {
+      // Define the image workflow based on user specified options for workflow configuration.
+      const ValidationStage = {
+        MediainfoImage: {
+          Enabled: true
+        }
       }
+      const RekognitionStage = {
+        faceSearchImage: {
+          Enabled: this.enabledOperators.includes("faceSearch"),
+          CollectionId:
+              this.faceCollectionId === ""
+                  ? "undefined"
+                  : this.faceCollectionId
+        },
+        labelDetectionImage: {
+          Enabled: this.enabledOperators.includes("labelDetection")
+        },
+        textDetectionImage: {
+          Enabled: this.enabledOperators.includes("textDetection")
+        },
+        celebrityRecognitionImage: {
+          Enabled: this.enabledOperators.includes(
+              "celebrityRecognition"
+          )
+        },
+        contentModerationImage: {
+          Enabled: this.enabledOperators.includes("contentModeration")
+        },
+        faceDetectionImage: {
+          Enabled: this.enabledOperators.includes("faceDetection")
+        }
+      }
+      const workflow_config = {
+        Name: "CasImageWorkflow",
+      }
+      workflow_config["Configuration"] = {}
+      workflow_config["Configuration"]["ValidationStage"] = ValidationStage
+      workflow_config["Configuration"]["RekognitionStage"] = RekognitionStage
+      return workflow_config
+    },
+    videoWorkflowConfig() {
+      // Define the video workflow based on user specified options for workflow configuration.
+      const defaultPrelimVideoStage = {
+        Thumbnail: {
+          ThumbnailPosition: this.thumbnail_position.toString(),
+          Enabled: true
+        },
+        Mediainfo: {
+          Enabled: true
+        }
+      }
+      const defaultVideoStage = {
+        faceDetection: {
+          Enabled: this.enabledOperators.includes("faceDetection")
+        },
+        technicalCueDetection: {
+          Enabled: this.enabledOperators.includes("technicalCueDetection")
+        },
+        shotDetection: {
+          Enabled: this.enabledOperators.includes("shotDetection")
+        },
+        celebrityRecognition: {
+          Enabled: this.enabledOperators.includes("celebrityRecognition")
+        },
+        labelDetection: {
+          Enabled: this.enabledOperators.includes("labelDetection")
+        },
+        Mediaconvert: {
+          Enabled: false
+        },
+        contentModeration: {
+          Enabled: this.enabledOperators.includes("contentModeration")
+        },
+        faceSearch: {
+          Enabled: this.enabledOperators.includes("faceSearch"),
+          CollectionId:
+              this.faceCollectionId === ""
+                  ? "undefined"
+                  : this.faceCollectionId
+        },
+        textDetection: {
+          Enabled: this.enabledOperators.includes("textDetection")
+        },
+        GenericDataLookup: {
+          Enabled: this.enabledOperators.includes("genericDataLookup"),
+          Bucket: this.DATAPLANE_BUCKET,
+          Key:
+              this.genericDataFilename === ""
+                  ? "undefined"
+                  : this.genericDataFilename
+        }
+      }
+      const defaultAudioStage = {
+        TranscribeVideo: {
+          Enabled: this.enabledOperators.includes("TranscribeVideo"),
+          TranscribeLanguage: this.transcribeLanguage
+        }
+      }
+      const defaultTextStage = {
+        Translate: {
+          Enabled: this.enabledOperators.includes("Translate"),
+          SourceLanguageCode: this.transcribeLanguage.split("-")[0],
+          TargetLanguageCode: this.targetLanguageCode
+        },
+        ComprehendEntities: {
+          Enabled: this.enabledOperators.includes("ComprehendEntities")
+        },
+        ComprehendKeyPhrases: {
+          Enabled: this.enabledOperators.includes("ComprehendKeyPhrases")
+        }
+      }
+      if (this.ComprehendEncryption === true && this.kmsKeyId.length > 0) {
+        defaultTextStage["ComprehendEntities"]["KmsKeyId"] = this.kmsKeyId
+        defaultTextStage["ComprehendKeyPhrases"]["KmsKeyId"] = this.kmsKeyId
+      }
+      const defaultTextSynthesisStage = {
+        // Polly is available in the MIECompleteWorkflow but not used in the front-end, so we've disabled it here.
+        Polly: {
+          Enabled: false
+        }
+      }
+      const workflow_config = {
+        Name: "CasVideoWorkflow",
+      }
+      workflow_config["Configuration"] = {}
+      workflow_config["Configuration"]["defaultPrelimVideoStage"] = defaultPrelimVideoStage
+      workflow_config["Configuration"]["defaultVideoStage"] = defaultVideoStage
+      workflow_config["Configuration"]["defaultAudioStage"] = defaultAudioStage
+      workflow_config["Configuration"]["defaultTextStage"] = defaultTextStage
+      workflow_config["Configuration"]["defaultTextSynthesisStage"] = defaultTextSynthesisStage
+      return workflow_config
     },
     workflowConfigWithInput() {
       // This function is just used to pretty print the rest api
       // for workflow execution in a popup modal
-      let data = this.workflowConfig
+      let data = this.workflow_config
       data["Input"] = {
         "Media": {
           "Video": {
@@ -495,37 +595,52 @@ export default {
       return data
     }
   },
+  created: function() {
+    if (this.$route.query.asset) {
+      this.hasAssetParam = true;
+      this.assetIdParam = this.$route.query.asset;
+    }
+  },
   mounted: function() {
     this.getCurlCommand();
     this.executed_assets = this.execution_history;
     this.pollWorkflowStatus();
-    console.log("this.DATAPLANE_BUCKET: " + this.DATAPLANE_BUCKET)
   },
   beforeDestroy () {
     clearInterval(this.workflow_status_polling)
   },
   methods: {
     getCurlCommand() {
-      this.$Amplify.Auth.currentSession().then(data =>{
-        const token = data.getIdToken().getJwtToken();
-        // get curl command to request workflow execution
-        this.curlCommand = 'curl -X POST -H "Authorization: '+token+'" -H "Content-Type: application/json" --data \''+JSON.stringify(this.workflowConfigWithInput)+'\' '+this.WORKFLOW_API_ENDPOINT+'workflow/execution'
-        // get curl command to request execution history
-        this.curlCommand2 = 'curl -X GET -H "Authorization: '+token+'" -H "Content-Type: application/json" '+this.WORKFLOW_API_ENDPOINT+'workflow/execution/asset/{asset_id}'
-      });
-
+      // get curl command to request workflow execution
+      this.curlCommand = 'awscurl -X POST --region '+ this.AWS_REGION +' -H "Content-Type: application/json" --data \''+JSON.stringify(this.workflowConfigWithInput)+'\' '+this.WORKFLOW_API_ENDPOINT+'workflow/execution'
+      // get curl command to request execution history
+      this.curlCommand2 = 'awscurl -X GET --region '+ this.AWS_REGION +' -H "Content-Type: application/json" '+this.WORKFLOW_API_ENDPOINT+'workflow/execution/asset/{asset_id}'
     },
-    selectAll: function (){
-      this.enabledOperators = ['labelDetection', 'celebrityRecognition', 'contentModeration', 'faceDetection', 'thumbnail', 'Transcribe', 'Translate', 'ComprehendKeyPhrases', 'ComprehendEntities']
+    selectAll: function() {
+      this.enabledOperators = [
+        "labelDetection",
+        "textDetection",
+        "celebrityRecognition",
+        "contentModeration",
+        "faceDetection",
+        "thumbnail",
+        "TranscribeVideo",
+        "Translate",
+        "ComprehendKeyPhrases",
+        "ComprehendEntities",
+        "technicalCueDetection",
+        "shotDetection"
+      ];
+      console.log(this.enabledOperators)
     },
-    clearAll: function (){
-      this.enabledOperators = []
+    clearAll: function() {
+      this.enabledOperators = [];
     },
-    openWindow: function (url) {
+    openWindow: function(url) {
       window.open(url);
     },
     countDownChanged(dismissCountDown) {
-      this.dismissCountDown = dismissCountDown
+      this.dismissCountDown = dismissCountDown;
     },
     s3UploadError(error) {
       console.log(error);
@@ -557,138 +672,141 @@ export default {
       this.invalidFileMessages = this.invalidFileMessages.filter(function(value){ return value != errorMessage})
       if (this.invalidFileMessages.length === 0 ) this.showInvalidFile = false;
     },
-    s3UploadComplete: async function (file) {
-      const token = await this.$Amplify.Auth.currentSession().then(data =>{
-        return data.getIdToken().getJwtToken();
-      });
+    runWorkflow: async function(file) {
       const vm = this;
-      console.log('s3UploadComplete: ');
-      const media_type = file.type;
-      console.log('media type: ' + media_type);
-      let data = {};
-      if (media_type.match(/image/g)) {
-        data = {
-          "Name": "ImageWorkflow",
-          "Configuration": {
-            "ValidationStage": {
-              "MediainfoImage": {
-                "Enabled": true
-              }
-            },
-            "RekognitionStage": {
-              "faceSearchImage": {
-                // Face search is disable because it has not yet been implemented
-                // in the analytics view.
-                "Enabled": false,
-                // "Enabled": this.enabledOperators.includes("faceSearch"),
-                "CollectionId": this.faceCollectionId === "" ? "undefined" : this.faceCollectionId
-              },
-              "labelDetectionImage": {
-                "Enabled": this.enabledOperators.includes("labelDetection"),
-              },
-              "celebrityRecognitionImage": {
-                "Enabled": this.enabledOperators.includes("celebrityRecognition"),
-              },
-              "contentModerationImage": {
-                "Enabled": this.enabledOperators.includes("contentModeration"),
-              },
-              "faceDetectionImage": {
-                "Enabled": this.enabledOperators.includes("faceDetection"),
-              }
-            }
-          },
-          "Input": {
-            "Media": {
-              "Image": {
-                "S3Bucket": this.DATAPLANE_BUCKET,
-                "S3Key": file.s3_key
-              }
-            }
-          }
-        };
-      } else if (media_type.match(/video/g)) {
-        data = vm.workflowConfig;
-        data["Input"] = {
-          "Media": {
-            "Video": {
-              "S3Bucket": this.DATAPLANE_BUCKET,
-              "S3Key": file.s3_key
-            }
-          }
-        };
+      let media_type = null;
+      let s3Key = null;
+      if ("s3_key" in file) {
+        media_type = file.type;
+        s3Key = file.s3_key; // add in public since amplify prepends that to all keys
       } else {
-        vm.s3UploadError("Unsupported media type, " + media_type + ".")
+        media_type = this.$route.query.mediaType;
+        s3Key = this.$route.query.s3key.split("/").pop();
       }
-      console.log(JSON.stringify(data));
-      fetch(this.WORKFLOW_API_ENDPOINT + 'workflow/execution', {
-        method: 'post',
-        body: JSON.stringify(data),
-        headers: {'Content-Type': 'application/json', 'Authorization': token}
-      }).then(response =>
-        response.json().then(data => ({
-              data: data,
-              status: response.status
-            })
-        ).then(res => {
-          if (res.status !== 200) {
-            console.log("ERROR: Failed to start workflow.");
-            console.log(res.data.Code);
-            console.log(res.data.Message);
-            console.log("URL: " + this.WORKFLOW_API_ENDPOINT + 'workflow/execution');
-            console.log("Data:");
-            console.log(JSON.stringify(data));
-            console.log((data));
-            console.log("Response: " + response.status);
-          } else {
-            const asset_id = res.data.AssetId;
-            console.log("Media assigned asset id: " + asset_id);
-            vm.executed_assets.push({asset_id: asset_id, file_name: s3_key, workflow_status: "", state_machine_console_link: ""});
-            vm.getWorkflowStatus(asset_id);
-          }
-        })
-      )
-    },
-    async getWorkflowStatus(asset_id) {
-      const token = await this.$Amplify.Auth.currentSession().then(data =>{
-        return data.getIdToken().getJwtToken();
-      });
-      const vm = this;
-      fetch(this.WORKFLOW_API_ENDPOINT+'workflow/execution/asset/'+asset_id, {
-        method: 'get',
-        headers: {
-          'Authorization': token
+      if (this.hasAssetParam) {
+        if (media_type === "video") {
+          this.workflow_config = vm.videoWorkflowConfig;
+          this.workflow_config["Input"] = { AssetId: this.assetIdParam, Media: { Video: {} } };
+        } else if (media_type === "image") {
+          this.workflow_config = vm.imageWorkflowConfig;
+          this.workflow_config["Input"] = { AssetId: this.assetIdParam, Media: { Image: {} } };
+        } else {
+          vm.s3UploadError(
+              "Unsupported media type, " + this.$route.query.mediaType + "."
+          );
         }
-      }).then(response =>
-          response.json().then(data => ({
-                data: data,
-                status: response.status
-              })
-          ).then(res => {
-            if (res.status !== 200) {
-              console.log("ERROR: Failed to get workflow status")
-            } else {
-              for (let i = 0; i < vm.executed_assets.length; i++) {
-                if (vm.executed_assets[i].asset_id === asset_id) {
-                  vm.executed_assets[i].workflow_status = res.data[0].Status;
-                  vm.executed_assets[i].state_machine_console_link = "https://"+this.AWS_REGION+".console.aws.amazon.com/states/home?region="+this.AWS_REGION+"#/executions/details/"+res.data[0].StateMachineExecutionArn;
-                  break;
-                }
+      } else {
+        if (media_type.match(/image/g)) {
+          this.workflow_config = vm.imageWorkflowConfig;
+          this.workflow_config["Input"] = {
+            Media: {
+              Image: {
+                S3Bucket: this.DATAPLANE_BUCKET,
+                S3Key: s3Key
               }
-              this.$store.commit('updateExecutedAssets', vm.executed_assets);
             }
-          })
-      )
+          }
+        } else if (
+            media_type.match(/video/g) ||
+            this.valid_media_types.includes(
+                s3key
+                    .split(".")
+                    .pop()
+                    .toLowerCase()
+            )
+        ) {
+          this.workflow_config = vm.videoWorkflowConfig;
+          this.workflow_config["Input"] = {
+            Media: {
+              Video: {
+                S3Bucket: this.DATAPLANE_BUCKET,
+                S3Key: s3Key
+              }
+            }
+          };
+        } else if (media_type === "application/json") {
+          // JSON files may be uploaded for the genericDataLookup operator, but
+          // we won't run a workflow for json file types.
+          //console.log("Data file has been uploaded to s3://" + location.s3ObjectLocation.fields.key);
+          return;
+        } else {
+          vm.s3UploadError("Unsupported media type: " + media_type + ".");
+        }
+      }
+      console.log("workflow execution configuration:")
+      console.log(this.workflow_config)
+      let apiName = 'mieWorkflowApi'
+      let path = 'workflow/execution'
+      let requestOpts = {
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        response: true,
+        body: this.workflow_config,
+        queryStringParameters: {} // optional
+      };
+      try {
+        let response = await this.$Amplify.API.post(apiName, path, requestOpts);
+        let asset_id = response.data.AssetId;
+        let wf_id = response.data.Id;
+        //console.log("Media assigned asset id: " + asset_id);
+        let executed_asset = {
+          asset_id: asset_id,
+          file_name: s3Key,
+          workflow_status: "",
+          state_machine_console_link: "",
+          wf_id: wf_id
+        };
+        vm.executed_assets.push(executed_asset);
+        vm.getWorkflowStatus(wf_id);
+        this.hasAssetParam = false;
+        this.assetIdParam = "";
+      } catch (error) {
+        console.log(
+            "ERROR: Failed to start workflow. Check Workflow API logs."
+        );
+        console.log(error)
+      }
+    },
+    async getWorkflowStatus(wf_id) {
+      const vm = this;
+      let apiName = 'mieWorkflowApi'
+      let path =  "workflow/execution/" + wf_id
+      let requestOpts = {
+        headers: {},
+        response: true,
+        queryStringParameters: {} // optional
+      };
+      try {
+        let response = await this.$Amplify.API.get(apiName, path, requestOpts);
+        for (let i = 0; i < vm.executed_assets.length; i++) {
+          if (vm.executed_assets[i].wf_id === wf_id) {
+            vm.executed_assets[i].workflow_status = response.data.Status;
+            vm.executed_assets[i].state_machine_console_link =
+                "https://" + this.AWS_REGION + ".console.aws.amazon.com/states/home?region=" + this.AWS_REGION + "#/executions/details/" + response.data.StateMachineExecutionArn;
+            break;
+          }
+        }
+        this.$store.commit("updateExecutedAssets", vm.executed_assets);
+      } catch (error) {
+        console.log("ERROR: Failed to get workflow status");
+        console.log(error)
+      }
     },
     pollWorkflowStatus() {
       // Poll frequency in milliseconds
       const poll_frequency = 5000;
       this.workflow_status_polling = setInterval(() => {
         this.executed_assets.forEach(item => {
-          if (item.workflow_status === "" || item.workflow_status === "Started" || item.workflow_status === "Queued") {
-            this.getWorkflowStatus(item.asset_id)
+          if (
+              item.workflow_status === "" ||
+              item.workflow_status === "Started" ||
+              item.workflow_status === "Queued"
+          ) {
+            this.getWorkflowStatus(item.wf_id);
           }
         });
-      }, poll_frequency)
+      }, poll_frequency);
     },
     uploadFiles() {
       console.log("Uploading to s3://" + this.DATAPLANE_BUCKET,);
