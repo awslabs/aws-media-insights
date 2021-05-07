@@ -1,8 +1,11 @@
 import Vue from 'vue'
+import VueHighlightJS from 'vue-highlightjs'
 import BootstrapVue from 'bootstrap-vue'
 
 import 'bootstrap/dist/css/bootstrap.css'
 import 'bootstrap-vue/dist/bootstrap-vue.css'
+import 'dropzone/dist/min/dropzone.min.css'
+import "highlight.js/styles/github.css"
 
 import App from './App.vue'
 import store from './store'
@@ -70,6 +73,7 @@ getRuntimeConfig().then(function(json) {
 
   Vue.use(AmplifyPlugin, AmplifyModules);
   Vue.use(BootstrapVue);
+  Vue.use(VueHighlightJS)
 
   new Vue({
     router,
