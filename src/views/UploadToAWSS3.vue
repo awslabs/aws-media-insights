@@ -651,7 +651,7 @@ export default {
     fileAdded: function( file )
     {
       let errorMessage = '';
-      if (!(file.type).match(/image\/.+|video\/.+|application\/json/g)) {
+      if (!(file.type).match(/image\/.+|video\/.+|application\/mxf|application\/json/g)) {
         if (file.type === "")
           errorMessage = "Unsupported file type: unknown";
         else
@@ -663,7 +663,7 @@ export default {
     fileRemoved: function( file )
     {
       let errorMessage = '';
-      if (!(file.type).match(/image\/.+|video\/.+|application\/json/g)) {
+      if (!(file.type).match(/image\/.+|video\/.+|application\/mxf|application\/json/g)) {
         if (file.type === "")
           errorMessage = "Unsupported file type: unknown";
         else
@@ -707,13 +707,7 @@ export default {
             }
           }
         } else if (
-            media_type.match(/video/g) ||
-            this.valid_media_types.includes(
-                s3key
-                    .split(".")
-                    .pop()
-                    .toLowerCase()
-            )
+            media_type.match(/video/g) || media_type === "application/mxf"
         ) {
           this.workflow_config = vm.videoWorkflowConfig;
           this.workflow_config["Input"] = {
