@@ -274,6 +274,7 @@ export default {
     processQueue: function() {
       const vm = this;
       let dropzoneEle = this.dropzone;
+      this.$emit('vdropzone-sending')
       if (this.isS3 && !this.wasQueueAutoProcess) {
         this.getQueuedFiles().forEach((file) => {
           this.getSignedAndUploadToS3(file);
@@ -287,8 +288,12 @@ export default {
       });
       this.dropzone.on('queuecomplete', function() {
         dropzoneEle.options.autoProcessQueue = false
+        vm.$emit('vdropzone-queue-complete')
       });
       this.dropzone.on('removedfile', function(file) {
+        if (this.getFilesWithStatus().length === 0) {
+          vm.$emit('vdropzone-queue-complete')
+        }
         vm.$Amplify.Storage.cancel(file.send_promise, "The user canceled this upload.");
       });
 
