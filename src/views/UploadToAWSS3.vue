@@ -36,7 +36,7 @@
       <b-button v-b-toggle.collapse-2 class="m-1">
         Configure Workflow
       </b-button>
-      <b-button v-if="validForm" variant="primary" @click="uploadFiles">
+      <b-button v-if="validForm && upload_in_progress===false" variant="primary" @click="uploadFiles">
         Upload and Run Workflow
       </b-button>
       <b-button v-else disabled variant="primary" @click="uploadFiles">
@@ -378,7 +378,7 @@ export default {
         // disable network timeouts (important for large uploads)
         timeout: 0,
         // limit max upload file size (in MB)
-        maxFilesize: 3000,
+        maxFilesize: 5000,
       },
       awss3: {
         signingURL: '',

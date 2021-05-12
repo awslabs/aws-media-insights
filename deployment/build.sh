@@ -97,7 +97,6 @@ cp "$template_dir/aws-content-analysis-web.yaml" "$dist_dir/aws-content-analysis
 cp "$template_dir/aws-content-analysis-video-workflow.yaml" "$dist_dir/aws-content-analysis-video-workflow.template"
 cp "$template_dir/aws-content-analysis-image-workflow.yaml" "$dist_dir/aws-content-analysis-image-workflow.template"
 cp "$template_dir/aws-content-analysis-image-workflow.yaml" "$dist_dir/aws-content-analysis-image-workflow.template"
-cp "$template_dir/aws-content-analysis-use-existing-mie-stack.yaml" "$dist_dir/aws-content-analysis-use-existing-mie-stack.template"
 
 find "$dist_dir"
 
@@ -108,21 +107,14 @@ new_bucket="s/%%BUCKET_NAME%%/$bucket/g"
 new_version="s/%%VERSION%%/$version/g"
 
 # Update templates in place. Copy originals to [filename].orig
-sed -i.orig -e "$new_bucket" "$dist_dir/aws-content-analysis-use-existing-mie-stack.template"
-sed -i.orig -e "$new_version" "$dist_dir/aws-content-analysis-use-existing-mie-stack.template"
-
 sed -i.orig -e "$new_bucket" "$dist_dir/aws-content-analysis.template"
 sed -i.orig -e "$new_version" "$dist_dir/aws-content-analysis.template"
-
 sed -i.orig -e "$new_bucket" "$dist_dir/aws-content-analysis-elasticsearch.template"
 sed -i.orig -e "$new_version" "$dist_dir/aws-content-analysis-elasticsearch.template"
-
 sed -i.orig -e "$new_bucket" "$dist_dir/aws-content-analysis-auth.template"
 sed -i.orig -e "$new_version" "$dist_dir/aws-content-analysis-auth.template"
-
 sed -i.orig -e "$new_bucket" "$dist_dir/aws-content-analysis-web.template"
 sed -i.orig -e "$new_version" "$dist_dir/aws-content-analysis-web.template"
-
 
 echo "------------------------------------------------------------------------------"
 echo "Elasticsearch consumer Function"
@@ -220,10 +212,8 @@ echo "Cleaning up complete"
 echo "------------------------------------------------------------------------------"
 
 echo ""
-echo "Templates to deploy:"
+echo "Template to deploy:"
 echo ""
-echo "With existing MIE deployment:"
-echo "TEMPLATE='"https://"$bucket".s3."$region".amazonaws.com/content-analysis-solution/"$version"/cf/aws-content-analysis-use-existing-mie-stack.template"'"
 echo "Without existing MIE deployment:"
 echo "TEMPLATE='"https://"$bucket".s3."$region".amazonaws.com/content-analysis-solution/"$version"/cf/aws-content-analysis.template"'"
 
