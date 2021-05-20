@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: "2010-09-09"
-Description: AWS Content Analysis - Deploys the AWS Content Analysis Application and the required Media Insights Engine Framework
+Description: (SO0042) - aws-content-analysis. This is the base AWS CloudFormation template that provisions resources for the AWS Content Analysis solution.
 
 Parameters:
   AdminEmail:
