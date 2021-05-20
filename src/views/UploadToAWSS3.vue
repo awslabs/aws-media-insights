@@ -123,6 +123,17 @@
                   <label>Translation Target Language</label>
                   <b-form-select v-model="targetLanguageCode" :options="translateLanguages"></b-form-select>
                 </div>
+                <b-form-checkbox
+                    v-if="enabledOperators.includes('ComprehendEntities') || enabledOperators.includes('ComprehendKeyPhrases')"
+                    v-model="ComprehendEncryption"
+                >
+                  Encrypt Comprehend job
+                </b-form-checkbox>
+                <b-form-input
+                    v-if="ComprehendEncryption && (enabledOperators.includes('ComprehendEntities') || enabledOperators.includes('ComprehendKeyPhrases'))"
+                    v-model="kmsKeyId"
+                    placeholder="Enter KMS key ID"
+                ></b-form-input>
               </b-form-group>
               <div v-if="textFormError" style="color:red">
                 {{ textFormError }}
@@ -264,6 +275,8 @@ export default {
       ],
       faceCollectionId: "",
       genericDataFilename: "",
+      ComprehendEncryption: false,
+      kmsKeyId: "",
       transcribeLanguage: "en-US",
       transcribeLanguages: [
         {text: 'Arabic, Gulf', value: 'ar-AE'},
@@ -494,12 +507,12 @@ export default {
         Thumbnail: {
           ThumbnailPosition: this.thumbnail_position.toString(),
           Enabled: true
-        },
-        Mediainfo: {
-          Enabled: true
         }
       }
       const defaultVideoStage = {
+        Mediainfo: {
+          Enabled: true
+        },
         faceDetection: {
           Enabled: this.enabledOperators.includes("faceDetection")
         },
@@ -583,7 +596,7 @@ export default {
     workflowConfigWithInput() {
       // This function is just used to pretty print the rest api
       // for workflow execution in a popup modal
-      let data = this.workflow_config
+      let data = JSON.parse(JSON.stringify(this.workflow_config));
       data["Input"] = {
         "Media": {
           "Video": {
