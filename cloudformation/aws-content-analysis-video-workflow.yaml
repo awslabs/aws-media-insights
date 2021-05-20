@@ -19,8 +19,6 @@ Resources:
       Operations:
         - Fn::ImportValue:
             Fn::Sub: "${OperatorLibraryStack}:Thumbnail"
-        - Fn::ImportValue:
-            Fn::Sub: "${OperatorLibraryStack}:Mediainfo"
   defaultVideoStage:
     Type: Custom::CustomResource
     Properties:
@@ -28,6 +26,8 @@ Resources:
       ResourceType: "Stage"
       Name: "defaultVideoStage"
       Operations:
+        - Fn::ImportValue:
+            Fn::Sub: "${OperatorLibraryStack}:Mediainfo"
         - Fn::ImportValue:
             Fn::Sub: "${OperatorLibraryStack}:GenericDataLookup"
         - Fn::ImportValue:
