@@ -296,13 +296,21 @@
         };
         try {
           let response = await this.$Amplify.API.get(apiName, path, requestOpts);
-          let filename = response.data.results.SourceS3Key.split("/").pop();
-          this.s3_uri = 's3://'+response.data.results.S3Bucket+'/'+response.data.results.S3Key+filename;
+          const source_bucket = response.data.results.S3Bucket;
+          const source_key = response.data.results.S3Key;
+          const metadata_bucket = response.data.results.AssetMetadataBucket;
+          const metadata_folder = response.data.results.AssetMetadataFolder;
+          let filename = source_key.split("/").pop();
           let fileType = filename.split('.').slice(-1)[0]
           if (this.supportedImageFormats.includes(fileType.toLowerCase()) ) {
             this.mediaType = "image"
+            this.s3_uri = 's3://'+source_bucket+'/'+source_key;
           } else {
             this.mediaType = "video"
+            // TODO: Get the path to the proxy mp4 from the dataplane results of the mediaconvert operator
+            // The mediaconvert operator sets proxy encode filename to [key]_proxy.mp4
+            const proxy_encode_key = metadata_folder + filename.split(".").slice(0,-1).join('.') + "_proxy.mp4";
+            this.s3_uri = 's3://' + metadata_bucket + '/' + proxy_encode_key;
           }
           this.filename = filename;
           this.getVideoUrl()
@@ -315,21 +323,9 @@
       async getVideoUrl() {
         // This function gets the video URL then initializes the video player
         const bucket = this.s3_uri.split("/")[2];
-        // TODO: Get the path to the proxy mp4 from the mediaconvert operator - clarifying this comment, this should just be a from the dataplane results of the mediaconvert operator
-        // Our mediaconvert operator sets proxy encode filename to [key]_proxy.mp4
-        let key="";
-        if (this.mediaType === "image") {
-          key = this.s3_uri.split(this.s3_uri.split("/")[2] + '/')[1];
-        }
-        if (this.mediaType === "video") {
-          const media_key = (this.s3_uri.split(this.s3_uri.split("/")[2])[1].replace('/input/public/upload', ''))
-          const proxy_encode_key = media_key.split(".").slice(0,-1).join('.') + "_proxy.mp4";
-          key = proxy_encode_key.replace("/", "")
-        }
+        const key = this.s3_uri.split(this.s3_uri.split("/")[2] + '/')[1];
         const data = { "S3Bucket": bucket, "S3Key": key };
-
         // get presigned URL to video file in S3
-
         let apiName = 'mieDataplaneApi'
         let path = 'download'
         let requestOpts = {

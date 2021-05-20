@@ -388,23 +388,26 @@
         let assetInfo = await this.getAssetInformation(assetId);
         let created = new Date(0);
         created.setUTCSeconds(assetInfo.results.Created);
-        let bucket = assetInfo.results.S3Bucket;
-        let s3Key = assetInfo.results.S3Key;
-        let sourceS3Key = assetInfo.results.SourceS3Key;
-        let s3Uri = 's3://' + bucket + '/' + s3Key;
-        let filename = sourceS3Key.split("/").pop();
+        let dataplane_bucket = assetInfo.results.AssetMetadataBucket;
+        let metadata_folder = assetInfo.results.AssetMetadataFolder;
+        let source_bucket = assetInfo.results.S3Bucket;
+        let source_key = assetInfo.results.S3Key;
+        let s3Uri = 's3://' + dataplane_bucket + '/' + metadata_folder;
+        let filename = source_key.split("/").pop();
         // The thumbnail is created by Media Convert, see:
         // source/operators/thumbnail/start_thumbnail.py
         let thumbnailS3Key = 'private/assets/' + assetId + '/' + filename.substring(0, filename.lastIndexOf(".")) + '_thumbnail.0000001.jpg';
+        let thumbnailS3Bucket = dataplane_bucket
         // If it's an image then Media Convert won't create a thumbnail.
         // In that case we use the uploaded image as the thumbnail.
         let supported_image_types = [".jpg", ".jpeg", ".tif", ".tiff", ".png", ".apng", ".gif", ".bmp", ".s gvg"];
         let media_type = filename.substring(filename.lastIndexOf(".")).toLowerCase();
         if (supported_image_types.includes(media_type)) {
           // use the uploaded image as a thumbnail
-          thumbnailS3Key = 'private/assets/' + assetId + '/input/public/upload/' + filename;
+          thumbnailS3Key = source_key;
+          thumbnailS3Bucket = source_bucket;
         }
-        let [thumbnail, workflowStatus] = await Promise.all([this.getAssetThumbnail(bucket, thumbnailS3Key), this.getAssetWorkflowStatus(assetId)]);
+        let [thumbnail, workflowStatus] = await Promise.all([this.getAssetThumbnail(thumbnailS3Bucket, thumbnailS3Key), this.getAssetWorkflowStatus(assetId)]);
         if (workflowStatus[0] && thumbnail)
         {
           this.asset_list.push({
