@@ -296,8 +296,8 @@
         };
         try {
           let response = await this.$Amplify.API.get(apiName, path, requestOpts);
-          this.s3_uri = 's3://'+response.data.results.S3Bucket+'/'+response.data.results.S3Key;
-          let filename = this.s3_uri.split("/").pop();
+          let filename = response.data.results.SourceS3Key.split("/").pop();
+          this.s3_uri = 's3://'+response.data.results.S3Bucket+'/'+response.data.results.S3Key+filename;
           let fileType = filename.split('.').slice(-1)[0]
           if (this.supportedImageFormats.includes(fileType.toLowerCase()) ) {
             this.mediaType = "image"

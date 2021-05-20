@@ -390,8 +390,9 @@
         created.setUTCSeconds(assetInfo.results.Created);
         let bucket = assetInfo.results.S3Bucket;
         let s3Key = assetInfo.results.S3Key;
+        let sourceS3Key = assetInfo.results.SourceS3Key;
         let s3Uri = 's3://' + bucket + '/' + s3Key;
-        let filename = s3Key.split("/").pop();
+        let filename = sourceS3Key.split("/").pop();
         // The thumbnail is created by Media Convert, see:
         // source/operators/thumbnail/start_thumbnail.py
         let thumbnailS3Key = 'private/assets/' + assetId + '/' + filename.substring(0, filename.lastIndexOf(".")) + '_thumbnail.0000001.jpg';
