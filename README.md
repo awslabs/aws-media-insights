@@ -117,6 +117,19 @@ When finished your stack should look like this:
 
 # Advanced Usage
 
+## Starting the content analysis video workflow from the command line
+***(Difficulty: 10 minutes)***
+
+The video analysis workflow used by this application can be invoked from any HTTP client that supports AWS_IAM authorization, such as [awscurl](https://github.com/okigan/awscurl). The following command shows how to start the video analysis workflow using `awscurl`. Prior to running this command you must configure  `awscurl` to use your AWS access key and secret key for authorization, and define values for `SOURCE_BUCKET`, `SOURCE_KEY`, and `WORKFLOW_API_ENDPOINT`.
+
+```
+SOURCE_BUCKET=
+SOURCE_KEY=
+WORKFLOW_API_ENDPOINT=
+awscurl -X POST --region us-west-2 --data '{"Name":"CasVideoWorkflow", "Configuration":{"defaultVideoStage":{"faceDetection":{"MediaType":"Video","Enabled":true},"textDetection":{"MediaType":"Video","Enabled":true},"celebrityRecognition":{"MediaType":"Video","Enabled":true},"GenericDataLookup":{"MediaType":"Video","Enabled":true},"labelDetection":{"MediaType":"Video","Enabled":true},"personTracking":{"MediaType":"Video","Enabled":true},"Mediaconvert":{"MediaType":"Video","Enabled":true},"shotDetection":{"MediaType":"Video","Enabled":true},"technicalCueDetection":{"MediaType":"Video","Enabled":true},"contentModeration":{"MediaType":"Video","Enabled":true},"faceSearch":{"MediaType":"Video","Enabled":true,"CollectionId":""}}}, "Input":{"Media":{"Video":{"S3Bucket": "' ${SOURCE_BUCKET} '", "S3Key":"' ${SOURCE_KEY} '"}}}}' ${WORKFLOW_API_ENDPOINT}workflow/execution | cut -f 2 -d "'" | perl -pe 's/"Definition.+?}]}}}",//g' | jq
+```
+
+
 ## Adding new operators and extending data stream consumers:
 ***(Difficulty: 60 minutes)***
 
