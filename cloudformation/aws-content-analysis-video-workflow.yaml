@@ -19,6 +19,8 @@ Resources:
       Operations:
         - Fn::ImportValue:
             Fn::Sub: "${OperatorLibraryStack}:Thumbnail"
+        - Fn::ImportValue:
+            Fn::Sub: "${OperatorLibraryStack}:Mediainfo"
   defaultVideoStage:
     Type: Custom::CustomResource
     Properties:
@@ -26,8 +28,6 @@ Resources:
       ResourceType: "Stage"
       Name: "defaultVideoStage"
       Operations:
-        - Fn::ImportValue:
-            Fn::Sub: "${OperatorLibraryStack}:Mediainfo"
         - Fn::ImportValue:
             Fn::Sub: "${OperatorLibraryStack}:GenericDataLookup"
         - Fn::ImportValue:
@@ -44,8 +44,6 @@ Resources:
             Fn::Sub: "${OperatorLibraryStack}:PersonTracking"
         - Fn::ImportValue:
             Fn::Sub: "${OperatorLibraryStack}:TextDetection"
-        - Fn::ImportValue:
-            Fn::Sub: "${OperatorLibraryStack}:Mediaconvert"
         - Fn::ImportValue:
             Fn::Sub: "${OperatorLibraryStack}:TechnicalCueDetection"
         - Fn::ImportValue:
