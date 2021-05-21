@@ -385,23 +385,22 @@
         }
       },
       async pushAssetToTable (assetId) {
-        let assetInfo = await this.getAssetInformation(assetId);
+        const assetInfo = await this.getAssetInformation(assetId);
         let created = new Date(0);
         created.setUTCSeconds(assetInfo.results.Created);
-        let dataplane_bucket = assetInfo.results.AssetMetadataBucket;
-        let metadata_folder = assetInfo.results.AssetMetadataFolder;
-        let source_bucket = assetInfo.results.S3Bucket;
-        let source_key = assetInfo.results.S3Key;
-        let s3Uri = 's3://' + dataplane_bucket + '/' + metadata_folder;
-        let filename = source_key.split("/").pop();
+        const metadata_folder = "/private/assets/"+assetId
+        const source_bucket = assetInfo.results.S3Bucket;
+        const source_key = assetInfo.results.S3Key;
+        let s3Uri = 's3://' + this.DATAPLANE_BUCKET + '/' + metadata_folder;
+        const filename = source_key.split("/").pop();
         // The thumbnail is created by Media Convert, see:
         // source/operators/thumbnail/start_thumbnail.py
         let thumbnailS3Key = 'private/assets/' + assetId + '/' + filename.substring(0, filename.lastIndexOf(".")) + '_thumbnail.0000001.jpg';
-        let thumbnailS3Bucket = dataplane_bucket
+        let thumbnailS3Bucket = this.DATAPLANE_BUCKET
         // If it's an image then Media Convert won't create a thumbnail.
         // In that case we use the uploaded image as the thumbnail.
-        let supported_image_types = [".jpg", ".jpeg", ".tif", ".tiff", ".png", ".apng", ".gif", ".bmp", ".s gvg"];
-        let media_type = filename.substring(filename.lastIndexOf(".")).toLowerCase();
+        const supported_image_types = [".jpg", ".jpeg", ".tif", ".tiff", ".png", ".apng", ".gif", ".bmp", ".s gvg"];
+        const media_type = filename.substring(filename.lastIndexOf(".")).toLowerCase();
         if (supported_image_types.includes(media_type)) {
           // use the uploaded image as a thumbnail
           thumbnailS3Key = source_key;

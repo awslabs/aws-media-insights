@@ -300,8 +300,8 @@
           let response = await this.$Amplify.API.get(apiName, path, requestOpts);
           const source_bucket = response.data.results.S3Bucket;
           const source_key = response.data.results.S3Key;
-          const metadata_bucket = response.data.results.AssetMetadataBucket;
-          const metadata_folder = response.data.results.AssetMetadataFolder;
+          const metadata_bucket = this.DATAPLANE_BUCKET;
+          const metadata_folder = "private/assets/"+asset_id
           let filename = source_key.split("/").pop();
           let fileType = filename.split('.').slice(-1)[0]
           if (this.supportedImageFormats.includes(fileType.toLowerCase()) ) {
@@ -311,7 +311,7 @@
             this.mediaType = "video"
             // TODO: Get the path to the proxy mp4 from the dataplane results of the mediaconvert operator
             // The mediaconvert operator sets proxy encode filename to [key]_proxy.mp4
-            const proxy_encode_key = metadata_folder + filename.split(".").slice(0,-1).join('.') + "_proxy.mp4";
+            const proxy_encode_key = metadata_folder + "/" + filename.split(".").slice(0,-1).join('.') + "_proxy.mp4";
             this.s3_uri = 's3://' + metadata_bucket + '/' + proxy_encode_key;
           }
           this.filename = filename;
