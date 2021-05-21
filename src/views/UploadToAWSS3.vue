@@ -507,12 +507,12 @@ export default {
         Thumbnail: {
           ThumbnailPosition: this.thumbnail_position.toString(),
           Enabled: true
+        },
+        Mediainfo: {
+          Enabled: true
         }
       }
       const defaultVideoStage = {
-        Mediainfo: {
-          Enabled: true
-        },
         faceDetection: {
           Enabled: this.enabledOperators.includes("faceDetection")
         },
@@ -527,9 +527,6 @@ export default {
         },
         labelDetection: {
           Enabled: this.enabledOperators.includes("labelDetection")
-        },
-        Mediaconvert: {
-          Enabled: false
         },
         contentModeration: {
           Enabled: this.enabledOperators.includes("contentModeration")
