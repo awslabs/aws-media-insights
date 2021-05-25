@@ -515,9 +515,6 @@ export default {
         labelDetection: {
           Enabled: this.enabledOperators.includes("labelDetection")
         },
-        Mediaconvert: {
-          Enabled: false
-        },
         contentModeration: {
           Enabled: this.enabledOperators.includes("contentModeration")
         },
@@ -728,7 +725,7 @@ export default {
         }
       }
       console.log("workflow execution configuration:")
-      console.log(this.workflow_config)
+      console.log(JSON.stringify(this.workflow_config))
       let apiName = 'mieWorkflowApi'
       let path = 'workflow/execution'
       let requestOpts = {
@@ -743,7 +740,6 @@ export default {
         let response = await this.$Amplify.API.post(apiName, path, requestOpts);
         let asset_id = response.data.AssetId;
         let wf_id = response.data.Id;
-        //console.log("Media assigned asset id: " + asset_id);
         let executed_asset = {
           asset_id: asset_id,
           file_name: s3Key,
