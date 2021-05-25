@@ -391,11 +391,6 @@ export default {
           // We use that to determine whether upload was successful:
           if (response.key !== undefined) {
             console.log("upload complete")
-            // file.s3ObjectLocation = response.message
-            // set dropzone url option to the URL in the get_presigned_url() response
-            // setTimeout(() => this.dropzone.processFile(file))
-            // this.$emit('vdropzone-s3-upload-success', key);
-            file.status = vm.dropzone.SUCCESS;
             file.s3_key = "public/"+response.key
             vm.dropzone.emit("success", file);
             vm.dropzone.emit("complete", file);
@@ -411,8 +406,6 @@ export default {
         vm.uploadValue = null
         vm.file = null
       }
-      setTimeout(() => this.dropzone.processFile(file))
-      this.$emit('vdropzone-s3-upload-success');
     },
     setAWSSigningURL(location) {
       if (this.isS3) {
