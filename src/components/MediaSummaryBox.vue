@@ -40,7 +40,7 @@
               </div>
               <div v-if="overall_bit_rate !== 'undefined'">
                 <label>Video bit rate:</label>
-                {{ overall_bit_rate }} Mbps
+                {{ overall_bit_rate }} bps
               </div>
               <div v-if="frame_rate !== 'undefined'">
                 <label>Video frame rate:</label>
