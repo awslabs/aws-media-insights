@@ -123,6 +123,17 @@
                   <label>Translation Target Language</label>
                   <b-form-select v-model="targetLanguageCode" :options="translateLanguages"></b-form-select>
                 </div>
+                <b-form-checkbox
+                    v-if="enabledOperators.includes('ComprehendEntities') || enabledOperators.includes('ComprehendKeyPhrases')"
+                    v-model="ComprehendEncryption"
+                >
+                  Encrypt Comprehend job
+                </b-form-checkbox>
+                <b-form-input
+                    v-if="ComprehendEncryption && (enabledOperators.includes('ComprehendEntities') || enabledOperators.includes('ComprehendKeyPhrases'))"
+                    v-model="kmsKeyId"
+                    placeholder="Enter KMS key ID"
+                ></b-form-input>
               </b-form-group>
               <div v-if="textFormError" style="color:red">
                 {{ textFormError }}
@@ -264,6 +275,8 @@ export default {
       ],
       faceCollectionId: "",
       genericDataFilename: "",
+      ComprehendEncryption: false,
+      kmsKeyId: "",
       transcribeLanguage: "en-US",
       transcribeLanguages: [
         {text: 'Arabic, Gulf', value: 'ar-AE'},
@@ -515,9 +528,6 @@ export default {
         labelDetection: {
           Enabled: this.enabledOperators.includes("labelDetection")
         },
-        Mediaconvert: {
-          Enabled: false
-        },
         contentModeration: {
           Enabled: this.enabledOperators.includes("contentModeration")
         },
@@ -583,7 +593,7 @@ export default {
     workflowConfigWithInput() {
       // This function is just used to pretty print the rest api
       // for workflow execution in a popup modal
-      let data = this.workflow_config
+      let data = JSON.parse(JSON.stringify(this.workflow_config));
       data["Input"] = {
         "Media": {
           "Video": {
@@ -728,7 +738,7 @@ export default {
         }
       }
       console.log("workflow execution configuration:")
-      console.log(this.workflow_config)
+      console.log(JSON.stringify(this.workflow_config))
       let apiName = 'mieWorkflowApi'
       let path = 'workflow/execution'
       let requestOpts = {
@@ -743,7 +753,6 @@ export default {
         let response = await this.$Amplify.API.post(apiName, path, requestOpts);
         let asset_id = response.data.AssetId;
         let wf_id = response.data.Id;
-        //console.log("Media assigned asset id: " + asset_id);
         let executed_asset = {
           asset_id: asset_id,
           file_name: s3Key,

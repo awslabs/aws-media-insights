@@ -117,6 +117,40 @@ When finished your stack should look like this:
 
 # Advanced Usage
 
+## Starting workflows from the command line
+***(Difficulty: 10 minutes)***
+
+The video analysis workflow used by this application can be invoked from any HTTP client that supports AWS_IAM authorization, such as [awscurl](https://github.com/okigan/awscurl). The following commands show how to start the video analysis workflow using `awscurl`. Prior to running this command you must configure  `awscurl` to use your AWS access key and secret key for authorization, and define values for `SOURCE_BUCKET`, `SOURCE_KEY`, and `WORKFLOW_API_ENDPOINT`.
+
+```
+SOURCE_BUCKET=
+SOURCE_KEY=
+WORKFLOW_API_ENDPOINT=
+# CasVideoWorkflow with default configuration:
+awscurl -X POST --region us-west-2 --data '{"Name":"CasVideoWorkflow", "Input":{"Media":{"Video":{"S3Bucket": "'${SOURCE_BUCKET}'", "S3Key":"'${SOURCE_KEY}'"}}}}' ${WORKFLOW_API_ENDPOINT}workflow/execution | cut -f 2 -d "'" | perl -pe 's/"Definition.+?}]}}}",//g' | jq
+# CasVideoWorkflow with custom configuration:
+awscurl -X POST --region us-west-2 --data '{"Name":"CasVideoWorkflow", "Configuration":{"defaultVideoStage":{"faceDetection":{"MediaType":"Video","Enabled":true},"textDetection":{"MediaType":"Video","Enabled":true},"celebrityRecognition":{"MediaType":"Video","Enabled":true},"GenericDataLookup":{"MediaType":"Video","Enabled":false},"labelDetection":{"MediaType":"Video","Enabled":true},"personTracking":{"MediaType":"Video","Enabled":true},"shotDetection":{"MediaType":"Video","Enabled":true},"technicalCueDetection":{"MediaType":"Video","Enabled":true},"contentModeration":{"MediaType":"Video","Enabled":true},"faceSearch":{"MediaType":"Video","Enabled":false,"CollectionId":""}}}, "Input":{"Media":{"Video":{"S3Bucket": "'${SOURCE_BUCKET}'", "S3Key":"'${SOURCE_KEY}'"}}}}' ${WORKFLOW_API_ENDPOINT}workflow/execution | cut -f 2 -d "'" | perl -pe 's/"Definition.+?}]}}}",//g' | jq
+```
+
+Similarly, here's how to run the image analysis workflow:
+
+```
+awscurl -X POST --region us-west-2 --data '{"Name":"CasImageWorkflow", "Input":{"Media":{"Video":{"S3Bucket": "'${SOURCE_BUCKET}'", "S3Key":"'${SOURCE_KEY}'"}}}}' ${WORKFLOW_API_ENDPOINT}workflow/execution | cut -f 2 -d "'" | perl -pe 's/"Definition.+?}]}}}",//g' | jq
+```
+
+## Starting workflows from a Python Lambda function
+***(Difficulty: 10 minutes)***
+
+The following Python code can be used in an AWS Lambda function to execute the video analysis workflow:
+
+
+
+
+## Starting workflows from an S3 trigger
+***(Difficulty: 10 minutes)***
+
+Workflows can be started automatically when files are copied to a target S3 bucket by using the following 
+
 ## Adding new operators and extending data stream consumers:
 ***(Difficulty: 60 minutes)***
 
