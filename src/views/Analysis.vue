@@ -51,10 +51,12 @@
                             @click="currentView = 'TextDetection'"
                           />
                           <b-tab
+                            v-if="mediaType !== 'image'"
                             title="Cues"
                             @click="currentView = 'TechnicalCues'"
                           />
                           <b-tab
+                            v-if="mediaType !== 'image'"
                             title="Shots"
                             @click="currentView = 'ShotDetection'"
                           />

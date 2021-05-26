@@ -10,8 +10,14 @@ The following Cloudformation templates will deploy the Media Insights front-end 
 
 Region| Launch
 ------|-----
-US East (N. Virginia) | [![Launch in us-east-1](doc/images/launch-stack.png)](https://console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks/new?stackName=mie&templateURL=https://rodeolabz-us-east-1.s3.us-east-1.amazonaws.com/content-analysis-solution/v2.0.4/cf/aws-content-analysis.template)
-US West (Oregon) | [![Launch in us-west-2](doc/images/launch-stack.png)](https://console.aws.amazon.com/cloudformation/home?region=us-west-2#/stacks/new?stackName=mie&templateURL=https://rodeolabz-us-west-2.s3.us-west-2.amazonaws.com/content-analysis-solution/v2.0.4/cf/aws-content-analysis.template)
+US East (N. Virginia) | [![Launch in us-east-1](doc/images/launch-stack.png)](https://console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks/new?stackName=mie&templateURL=https://rodeolabz-us-east-1.s3.us-east-1.amazonaws.com/content-analysis-solution/v2.0.5/cf/aws-content-analysis.template)
+US West (Oregon) | [![Launch in us-west-2](doc/images/launch-stack.png)](https://console.aws.amazon.com/cloudformation/home?region=us-west-2#/stacks/new?stackName=mie&templateURL=https://rodeolabz-us-west-2.s3.us-west-2.amazonaws.com/content-analysis-solution/v2.0.5/cf/aws-content-analysis.template)
+
+Once the Cloud Formation stack has been created, open the URL shown in the `ContentAnalyisSolution` output of the base stack. You can also get this URL with the following AWS CLI command:
+
+```
+aws cloudformation --region $REGION describe-stacks --stack-name $STACK_NAME --query "Stacks[0].Outputs[?OutputKey=='ContentAnalyisSolution'].OutputValue" --output text
+```
 
 For more installation options, see the [Advanced Installation](#advanced-installation-options) section.
 
@@ -110,6 +116,40 @@ When finished your stack should look like this:
 <img src="doc/images/nested_stacks.png" width=300>
 
 # Advanced Usage
+
+## Starting workflows from the command line
+***(Difficulty: 10 minutes)***
+
+The video analysis workflow used by this application can be invoked from any HTTP client that supports AWS_IAM authorization, such as [awscurl](https://github.com/okigan/awscurl). The following commands show how to start the video analysis workflow using `awscurl`. Prior to running this command you must configure  `awscurl` to use your AWS access key and secret key for authorization, and define values for `SOURCE_BUCKET`, `SOURCE_KEY`, and `WORKFLOW_API_ENDPOINT`.
+
+```
+SOURCE_BUCKET=
+SOURCE_KEY=
+WORKFLOW_API_ENDPOINT=
+# CasVideoWorkflow with default configuration:
+awscurl -X POST --region us-west-2 --data '{"Name":"CasVideoWorkflow", "Input":{"Media":{"Video":{"S3Bucket": "'${SOURCE_BUCKET}'", "S3Key":"'${SOURCE_KEY}'"}}}}' ${WORKFLOW_API_ENDPOINT}workflow/execution | cut -f 2 -d "'" | perl -pe 's/"Definition.+?}]}}}",//g' | jq
+# CasVideoWorkflow with custom configuration:
+awscurl -X POST --region us-west-2 --data '{"Name":"CasVideoWorkflow", "Configuration":{"defaultVideoStage":{"faceDetection":{"MediaType":"Video","Enabled":true},"textDetection":{"MediaType":"Video","Enabled":true},"celebrityRecognition":{"MediaType":"Video","Enabled":true},"GenericDataLookup":{"MediaType":"Video","Enabled":false},"labelDetection":{"MediaType":"Video","Enabled":true},"personTracking":{"MediaType":"Video","Enabled":true},"shotDetection":{"MediaType":"Video","Enabled":true},"technicalCueDetection":{"MediaType":"Video","Enabled":true},"contentModeration":{"MediaType":"Video","Enabled":true},"faceSearch":{"MediaType":"Video","Enabled":false,"CollectionId":""}}}, "Input":{"Media":{"Video":{"S3Bucket": "'${SOURCE_BUCKET}'", "S3Key":"'${SOURCE_KEY}'"}}}}' ${WORKFLOW_API_ENDPOINT}workflow/execution | cut -f 2 -d "'" | perl -pe 's/"Definition.+?}]}}}",//g' | jq
+```
+
+Similarly, here's how to run the image analysis workflow:
+
+```
+awscurl -X POST --region us-west-2 --data '{"Name":"CasImageWorkflow", "Input":{"Media":{"Video":{"S3Bucket": "'${SOURCE_BUCKET}'", "S3Key":"'${SOURCE_KEY}'"}}}}' ${WORKFLOW_API_ENDPOINT}workflow/execution | cut -f 2 -d "'" | perl -pe 's/"Definition.+?}]}}}",//g' | jq
+```
+
+## Starting workflows from a Python Lambda function
+***(Difficulty: 10 minutes)***
+
+The following Python code can be used in an AWS Lambda function to execute the video analysis workflow:
+
+
+
+
+## Starting workflows from an S3 trigger
+***(Difficulty: 10 minutes)***
+
+Workflows can be started automatically when files are copied to a target S3 bucket by using the following 
 
 ## Adding new operators and extending data stream consumers:
 ***(Difficulty: 60 minutes)***

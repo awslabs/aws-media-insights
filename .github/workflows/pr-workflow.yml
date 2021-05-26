@@ -55,8 +55,7 @@ jobs:
           # If $STACK_NAME exists...
           if [ $(echo $(aws cloudformation list-stacks --query 'StackSummaries[?StackName==`$STACK_NAME`]' --output text)  | tr -d '\n' | wc -c) > 0 ]; then
             # Then delete $STACK_NAME...
-            echo "Removing $STACK_NAME so we can use that stack name again:"
-            aws cloudformation list-stacks --query 'StackSummaries[?StackName==`$STACK_NAME`]' --output text
+            echo "Removing $STACK_NAME so we can use that stack name again"
             aws cloudformation delete-stack --stack-name $STACK_NAME --region $REGION
             aws cloudformation wait stack-delete-complete --stack-name $STACK_NAME
           fi
@@ -187,4 +186,3 @@ jobs:
           else
             echo "User requested not to delete stack."
           fi
-
