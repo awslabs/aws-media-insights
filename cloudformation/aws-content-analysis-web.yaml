@@ -16,8 +16,6 @@ Parameters:
     Type: String
   PoolClientId:
     Type: String
-  ShortUUID:
-    Type: String
 
 Mappings:
   ContentAnalysisApp:
@@ -278,7 +276,6 @@ Resources:
           IdentityPoolId: !Ref IdentityPoolId
           AwsRegion: !Ref AWS::Region
           PoolClientId: !Ref PoolClientId
-          ShortUUID: !Ref ShortUUID
 
 Outputs:
   CloudfrontUrl:

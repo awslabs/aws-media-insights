@@ -8,9 +8,6 @@ Parameters:
   OperatorLibraryStack:
     Description: "Name of the MIE operator library stack"
     Type: String
-  ShortUUID:
-    Description: "Unique ID for resource naming"
-    Type: String
 
 Resources:
   PreliminaryStage:
@@ -18,7 +15,7 @@ Resources:
     Properties:
       ServiceToken: !Ref WorkflowCustomResourceArn
       ResourceType: "Stage"
-      Name: !Join ["", ["defaultPrelimVideoStage-", !Ref ShortUUID]]
+      Name: "defaultPrelimVideoStage"
       Operations:
         - Fn::ImportValue:
             Fn::Sub: "${OperatorLibraryStack}:Thumbnail"
@@ -29,7 +26,7 @@ Resources:
     Properties:
       ServiceToken: !Ref WorkflowCustomResourceArn
       ResourceType: "Stage"
-      Name: !Join ["", ["defaultVideoStage-", !Ref ShortUUID]]
+      Name: "defaultVideoStage"
       Operations:
         - Fn::ImportValue:
             Fn::Sub: "${OperatorLibraryStack}:GenericDataLookup"
@@ -57,7 +54,7 @@ Resources:
     Properties:
       ServiceToken: !Ref WorkflowCustomResourceArn
       ResourceType: "Stage"
-      Name: !Join ["", ["defaultAudioStage-", !Ref ShortUUID]]
+      Name: "defaultAudioStage"
       Operations:
         - Fn::ImportValue:
             Fn::Sub: "${OperatorLibraryStack}:TranscribeVideo"
@@ -67,7 +64,7 @@ Resources:
     Properties:
       ServiceToken: !Ref WorkflowCustomResourceArn
       ResourceType: "Stage"
-      Name: !Join ["", ["defaultTextStage-", !Ref ShortUUID]]
+      Name: "defaultTextStage"
       Operations:
         - Fn::ImportValue:
             Fn::Sub: "${OperatorLibraryStack}:Translate"
@@ -81,7 +78,7 @@ Resources:
     Properties:
       ServiceToken: !Ref WorkflowCustomResourceArn
       ResourceType: "Stage"
-      Name: !Join ["", ["defaultTextSynthesisStage-", !Ref ShortUUID]]
+      Name: "defaultTextSynthesisStage"
       Operations:
         - Fn::ImportValue:
             Fn::Sub: "${OperatorLibraryStack}:Polly"
@@ -97,7 +94,7 @@ Resources:
     Properties:
       ServiceToken: !Ref WorkflowCustomResourceArn
       ResourceType: "Workflow"
-      Name: !Join ["", ["CasVideoWorkflow-", !Ref ShortUUID]]
+      Name: "CasVideoWorkflow"
       StartAt: !GetAtt PreliminaryStage.Name
       Stages: !Sub
         - |-
