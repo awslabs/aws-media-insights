@@ -8,6 +8,9 @@ Parameters:
   OperatorLibraryStack:
     Description: "Name of the MIE operator library stack"
     Type: String
+  ShortUUID:
+    Description: "Unique ID for resource naming"
+    Type: String
 
 Resources:
   # Stages
@@ -17,7 +20,7 @@ Resources:
     Properties:
       ServiceToken: !Ref WorkflowCustomResourceArn
       ResourceType: "Stage"
-      Name: "ValidationStage"
+      Name: !Join ["", ["ValidationStage-", !Ref ShortUUID]]
       Operations:
         - Fn::ImportValue:
             Fn::Sub: "${OperatorLibraryStack}:MediainfoImage"
@@ -27,7 +30,7 @@ Resources:
     Properties:
       ServiceToken: !Ref WorkflowCustomResourceArn
       ResourceType: "Stage"
-      Name: "parallelRekognitionStage"
+      Name: !Join ["", ["parallelRekognitionStage-", !Ref ShortUUID]]
       Operations:
         - Fn::ImportValue:
             Fn::Sub: "${OperatorLibraryStack}:CelebRecognition"
@@ -52,7 +55,7 @@ Resources:
     Properties:
       ServiceToken: !Ref WorkflowCustomResourceArn
       ResourceType: "Stage"
-      Name: "RekognitionVideoNoFaceSearchStage"
+      Name: !Join ["", ["RekognitionVideoNoFaceSearchStage-", !Ref ShortUUID]]
       Operations:
         - Fn::ImportValue:
             Fn::Sub: "${OperatorLibraryStack}:LabelDetection"
@@ -70,7 +73,7 @@ Resources:
     Properties:
       ServiceToken: !Ref WorkflowCustomResourceArn
       ResourceType: "Stage"
-      Name: "RekognitionStage"
+      Name: !Join ["", ["RekognitionStage-", !Ref ShortUUID]]
       Operations:
         - Fn::ImportValue:
             Fn::Sub: "${OperatorLibraryStack}:CelebRecognitionImage"
@@ -92,7 +95,7 @@ Resources:
     Properties:
       ServiceToken: !Ref WorkflowCustomResourceArn
       ResourceType: "Stage"
-      Name: "RekognitionImageNoFaceSearchStage"
+      Name: !Join ["", ["RekognitionImageNoFaceSearchStage-", !Ref ShortUUID]]
       Operations:
         - Fn::ImportValue:
             Fn::Sub: "${OperatorLibraryStack}:CelebRecognitionImage"
@@ -115,7 +118,7 @@ Resources:
     Properties:
       ServiceToken: !Ref WorkflowCustomResourceArn
       ResourceType: "Workflow"
-      Name: "CasImageWorkflow"
+      Name: !Join ["", ["CasImageWorkflow-", !Ref ShortUUID]]
       StartAt: !GetAtt ValidationStage.Name
       Stages: !Sub
         - |-
