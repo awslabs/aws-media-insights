@@ -21,7 +21,7 @@ phases:
     commands:
       - echo "Starting build `date` in `pwd`"
       - env
-      - chmod +x ./build-s3-dist.sh && ./build-s3-dist.sh $DIST_OUTPUT_BUCKET-$AWS_REGION $VERSION $AWS_REGION
+      - chmod +x ./build-s3-dist.sh && ./build-s3-dist.sh --template-bucket ${TEMPLATE_OUTPUT_BUCKET} --code-bucket ${DIST_OUTPUT_BUCKET} --version ${VERSION} --region ${AWS_REGION}
       - echo "Build completed `date`"
       - echo "Starting open-source-dist `date` in `pwd`"
       - chmod +x ./build-open-source-dist.sh && ./build-open-source-dist.sh $SOLUTION_NAME
