@@ -24,10 +24,8 @@ Mappings:
       Version: "v2.0.5"
   ContentAnalysisApp:
     SourceCode:
-      S3Bucket: "%%BUCKET_NAME%%"
-      CodeKeyPrefix: "content-analysis-solution/%%VERSION%%/code"
-      TemplateKeyPrefix: "content-analysis-solution/%%VERSION%%/cf"
-      WebsitePrefix: "content-analysis-solution/%%VERSION%%/code/website"
+      GlobalS3Bucket: "%%GLOBAL_BUCKET_NAME%%"
+      TemplateKeyPrefix: "aws-content-analysis/%%VERSION%%"
 
 Resources:
   # Deploy MIE Framework
@@ -66,7 +64,7 @@ Resources:
           - !FindInMap
             - ContentAnalysisApp
             - SourceCode
-            - S3Bucket
+            - GlobalS3Bucket
           - ".s3."
           - !Ref AWS::Region
           - ".amazonaws.com/"
@@ -91,7 +89,7 @@ Resources:
           - !FindInMap
             - ContentAnalysisApp
             - SourceCode
-            - S3Bucket
+            - GlobalS3Bucket
           - ".s3."
           - !Ref AWS::Region
           - ".amazonaws.com/"
@@ -117,7 +115,7 @@ Resources:
           - !FindInMap
             - ContentAnalysisApp
             - SourceCode
-            - S3Bucket
+            - GlobalS3Bucket
           - ".s3."
           - !Ref AWS::Region
           - ".amazonaws.com/"
@@ -146,7 +144,7 @@ Resources:
           - !FindInMap
             - ContentAnalysisApp
             - SourceCode
-            - S3Bucket
+            - GlobalS3Bucket
           - ".s3."
           - !Ref AWS::Region
           - ".amazonaws.com/"
@@ -176,7 +174,7 @@ Resources:
           - !FindInMap
             - ContentAnalysisApp
             - SourceCode
-            - S3Bucket
+            - GlobalS3Bucket
           - ".s3."
           - !Ref AWS::Region
           - ".amazonaws.com/"

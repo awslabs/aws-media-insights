@@ -87,7 +87,8 @@ cd deployment
 DATETIME=$(date '+%s')
 DIST_OUTPUT_BUCKET=media-insights-engine-frontend-$DATETIME
 aws s3 mb s3://$DIST_OUTPUT_BUCKET-$REGION --region $REGION
-./build.sh $DIST_OUTPUT_BUCKET-$REGION $VERSION $REGION
+aws s3 mb s3://$TEMPLATE_OUTPUT_BUCKET --region $REGION
+./build-s3-dist.sh --template-bucket ${TEMPLATE_OUTPUT_BUCKET} --code-bucket ${DIST_OUTPUT_BUCKET} --version ${VERSION} --region ${REGION}
 ```
 
 Once you have built the demo app with the above commands, then it's time to deploy it. You have two options, depending on whether you want to deploy over an existing MIE stack or a new one:
