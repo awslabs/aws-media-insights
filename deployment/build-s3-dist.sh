@@ -40,7 +40,7 @@ Available options:
 --code-bucket     S3 bucket to put Lambda code packages
 --version         Arbitrary string indicating build version
 --region          AWS Region, formatted like us-west-2
---profile         AWS profile for CLI commands
+--profile         AWS profile for CLI commands (optional)
 EOF
   exit 1
 }
@@ -79,7 +79,6 @@ parse_params() {
   # default values of variables set from params
   flag=0
   param=''
-  profile="default"
 
   while :; do
     case "${1-}" in
@@ -305,9 +304,10 @@ if [ "$global_bucket" != "solutions-reference" ] && [ "$global_bucket" != "solut
   echo "Copying the prepared distribution to:"
   echo "s3://$global_bucket/aws-content-analysis/$version/"
   echo "s3://${regional_bucket}-${region}/aws-content-analysis/$version/"
+
   set -x
-  aws s3 sync $global_dist_dir s3://$global_bucket/aws-content-analysis/$version/ --profile ${profile}
-  aws s3 sync $regional_dist_dir s3://${regional_bucket}-${region}/aws-content-analysis/$version/ --profile ${profile}
+  aws s3 sync $global_dist_dir s3://$global_bucket/aws-content-analysis/$version/ $(if [ ! -z $profile ]; then echo "--profile $profile"; fi)
+  aws s3 sync $regional_dist_dir s3://${regional_bucket}-${region}/aws-content-analysis/$version/ $(if [ ! -z $profile ]; then echo "--profile $profile"; fi)
   set +x
 
   echo "------------------------------------------------------------------------------"
