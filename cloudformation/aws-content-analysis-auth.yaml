@@ -143,6 +143,11 @@ Resources:
 
   CognitoStandardAuthDefaultRole:
     Type: "AWS::IAM::Role"
+    Metadata:
+      cfn_nag:
+        rules_to_suppress:
+          - id: F38
+            reason: "The * resource used in this role relates to a deny action, not an allow action."
     Properties:
       AssumeRolePolicyDocument:
         Version: "2012-10-17"

@@ -42,12 +42,14 @@ Resources:
       Handler: index.handler
       Runtime: python3.8
       Role: !GetAtt WebsiteBucketNameExecutionRole.Arn
+
   WebsiteBucketNameFunctionPermissions:
     Type: AWS::Lambda::Permission
     Properties:
       Action: 'lambda:InvokeFunction'
       FunctionName: !GetAtt WebsiteBucketNameFunction.Arn
       Principal: 'cloudformation.amazonaws.com'
+
   WebsiteBucketNameExecutionRole:
     Type: AWS::IAM::Role
     Properties:
@@ -67,8 +69,12 @@ Resources:
             Version: 2012-10-17
             Statement:
               - Effect: Allow
-                Action: ['logs:*']
+                Action:
+                  - "logs:CreateLogGroup"
+                  - "logs:CreateLogStream"
+                  - "logs:PutLogEvents"
                 Resource: 'arn:aws:logs:*:*:*'
+
   GetWebsiteBucketName:
     Type: Custom::CustomResource
     Properties:

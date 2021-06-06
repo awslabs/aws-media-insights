@@ -62,6 +62,10 @@ Resources:
         Iops: 0
         VolumeSize: 10
         VolumeType: gp2
+      EncryptionAtRestOptions:
+        Enabled: true
+      NodeToNodeEncryptionOptions:
+        Enabled: true
       ElasticsearchClusterConfig:
         DedicatedMasterEnabled: false
         InstanceCount:
