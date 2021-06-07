@@ -44,15 +44,15 @@
       </b-button>
       <br>
       <!-- TODO: add a drop-down option in this modal to choose update workflow, then update workflowConfigWithInput to include the appropriate workflow config -->
-<!--      <b-button-->
-<!--        :pressed="false"-->
-<!--        size="sm"-->
-<!--        variant="link"-->
-<!--        class="text-decoration-none"-->
-<!--        @click="showExecuteApi = true"-->
-<!--      >-->
-<!--        Show API request to run workflow-->
-<!--      </b-button>-->
+      <b-button
+        :pressed="false"
+        size="sm"
+        variant="link"
+        class="text-decoration-none"
+        @click="showExecuteApi = true"
+      >
+        Show API request to run workflow
+      </b-button>
       <b-modal
         v-model="showExecuteApi"
         scrollable
@@ -79,10 +79,10 @@
             <b-card header="Video Operators">
               <b-form-group>
                 <b-form-checkbox-group
-                    id="checkbox-group-1"
-                    v-model="enabledOperators"
-                    :options="videoOperators"
-                    name="flavour-1"
+                  id="checkbox-group-1"
+                  v-model="enabledOperators"
+                  :options="videoOperators"
+                  name="flavour-1"
                 ></b-form-checkbox-group>
                 <label>Thumbnail position: </label>
                 <b-form-input v-model="thumbnail_position" type="range" min="1" max="20" step="1"></b-form-input> {{ thumbnail_position }} sec
@@ -124,15 +124,15 @@
                   <b-form-select v-model="targetLanguageCode" :options="translateLanguages"></b-form-select>
                 </div>
                 <b-form-checkbox
-                    v-if="enabledOperators.includes('ComprehendEntities') || enabledOperators.includes('ComprehendKeyPhrases')"
-                    v-model="ComprehendEncryption"
+                  v-if="enabledOperators.includes('ComprehendEntities') || enabledOperators.includes('ComprehendKeyPhrases')"
+                  v-model="ComprehendEncryption"
                 >
                   Encrypt Comprehend job
                 </b-form-checkbox>
                 <b-form-input
-                    v-if="ComprehendEncryption && (enabledOperators.includes('ComprehendEntities') || enabledOperators.includes('ComprehendKeyPhrases'))"
-                    v-model="kmsKeyId"
-                    placeholder="Enter KMS key ID"
+                  v-if="ComprehendEncryption && (enabledOperators.includes('ComprehendEntities') || enabledOperators.includes('ComprehendKeyPhrases'))"
+                  v-model="kmsKeyId"
+                  placeholder="Enter KMS key ID"
                 ></b-form-input>
               </b-form-group>
               <div v-if="textFormError" style="color:red">
@@ -594,6 +594,7 @@ export default {
       // This function is just used to pretty print the rest api
       // for workflow execution in a popup modal
       let data = JSON.parse(JSON.stringify(this.workflow_config));
+      data["Name"] = "CasVideoWorkflow"
       data["Input"] = {
         "Media": {
           "Video": {

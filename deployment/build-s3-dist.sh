@@ -278,7 +278,7 @@ npm install
 echo "Compiling the vue app"
 npm run build
 echo "Finished building website"
-cp -r ../dist/ "$regional_dist_dir"/website/
+cp -r ../dist/* "$regional_dist_dir"/website/
 rm -rf ../dist
 
 echo "------------------------------------------------------------------------------"
