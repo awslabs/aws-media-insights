@@ -169,7 +169,7 @@ jobs:
           npm i puppeteer --quiet
           docker build --tag=cas-puppeteer:latest . --quiet
           echo "Running puppeteer tests"
-          docker run --rm -v "$PWD":/usr/src/app -e WEBAPP_URL="${{ env.WEBAPP_URL }}" -e TEMP_PASSWORD="${{ env.TEMP_PASSWORD }}" cas-puppeteer:latest
+          docker run --rm -v "$PWD":/usr/src/app -e WEBAPP_URL="${{ env.WEBAPP_URL }}" -e INVITATION_EMAIL_RECIPIENT="${{ secrets.INVITATION_EMAIL_RECIPIENT }}" -e TEMP_PASSWORD="${{ env.TEMP_PASSWORD }}" cas-puppeteer:latest
 
       - name: Clean the test environment
         run: |
