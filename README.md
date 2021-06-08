@@ -81,8 +81,8 @@ EMAIL=[specify your email]
 WEBAPP_STACK_NAME=[specify a stack name]
 REGION=[specify a region]
 VERSION=1.0.0
-git clone https://github.com/awslabs/aws-media-insights
-cd aws-media-insights
+git clone https://github.com/awslabs/aws-content-analysis
+cd aws-content-analysis
 cd deployment
 DATETIME=$(date '+%s')
 DIST_OUTPUT_BUCKET=media-insights-engine-frontend-$DATETIME
