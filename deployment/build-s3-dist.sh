@@ -159,10 +159,9 @@ fi
 
 # Get reference for all important folders
 build_dir="$PWD"
-template_dir="$build_dir/../cloudformation"
-consumer_dir="$build_dir/../consumer"
-helper_dir="$build_dir/../helper"
-website_dir="$build_dir/../src"
+consumer_dir="$build_dir/../source/consumer"
+helper_dir="$build_dir/../source/helper"
+website_dir="$build_dir/../source/website/"
 global_dist_dir="$build_dir/global-s3-assets"
 regional_dist_dir="$build_dir/regional-s3-assets"
 
@@ -203,16 +202,16 @@ mkdir -p "$regional_dist_dir"/website/
 echo "------------------------------------------------------------------------------"
 echo "CloudFormation Templates"
 echo "------------------------------------------------------------------------------"
-
+echo ""
 echo "Preparing template files:"
-cp "$template_dir/aws-content-analysis.yaml" "$global_dist_dir/aws-content-analysis.template"
-cp "$template_dir/aws-content-analysis-elasticsearch.yaml" "$global_dist_dir/aws-content-analysis-elasticsearch.template"
-cp "$template_dir/aws-content-analysis-auth.yaml" "$global_dist_dir/aws-content-analysis-auth.template"
-cp "$template_dir/aws-content-analysis-web.yaml" "$global_dist_dir/aws-content-analysis-web.template"
-cp "$template_dir/aws-content-analysis-video-workflow.yaml" "$global_dist_dir/aws-content-analysis-video-workflow.template"
-cp "$template_dir/aws-content-analysis-image-workflow.yaml" "$global_dist_dir/aws-content-analysis-image-workflow.template"
-cp "$template_dir/aws-content-analysis-image-workflow.yaml" "$global_dist_dir/aws-content-analysis-image-workflow.template"
-cp "$template_dir/aws-content-analysis-use-existing-mie-stack.yaml" "$global_dist_dir/aws-content-analysis-use-existing-mie-stack.template"
+cp "$build_dir/aws-content-analysis.yaml" "$global_dist_dir/aws-content-analysis.template"
+cp "$build_dir/aws-content-analysis-elasticsearch.yaml" "$global_dist_dir/aws-content-analysis-elasticsearch.template"
+cp "$build_dir/aws-content-analysis-auth.yaml" "$global_dist_dir/aws-content-analysis-auth.template"
+cp "$build_dir/aws-content-analysis-web.yaml" "$global_dist_dir/aws-content-analysis-web.template"
+cp "$build_dir/aws-content-analysis-video-workflow.yaml" "$global_dist_dir/aws-content-analysis-video-workflow.template"
+cp "$build_dir/aws-content-analysis-image-workflow.yaml" "$global_dist_dir/aws-content-analysis-image-workflow.template"
+cp "$build_dir/aws-content-analysis-image-workflow.yaml" "$global_dist_dir/aws-content-analysis-image-workflow.template"
+cp "$build_dir/aws-content-analysis-use-existing-mie-stack.yaml" "$global_dist_dir/aws-content-analysis-use-existing-mie-stack.template"
 find "$global_dist_dir"
 echo "Updating template source bucket in template files with '$global_bucket'"
 echo "Updating code source bucket in template files with '$regional_bucket'"
@@ -278,8 +277,8 @@ npm install
 echo "Compiling the vue app"
 npm run build
 echo "Finished building website"
-cp -r ../dist/* "$regional_dist_dir"/website/
-rm -rf ../dist
+cp -r ./dist/* "$regional_dist_dir"/website/
+rm -rf ./dist
 
 echo "------------------------------------------------------------------------------"
 echo "Website Helper"

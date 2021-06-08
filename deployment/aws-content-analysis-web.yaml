@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: "2010-09-09"
-Description: Media Insights Engine - AWS CloudFormation template that provisions a web application for exploring extracted data
+Description: "(SO0042) - aws-content-analysis. AWS CloudFormation template that provisions the web application for the AWS Content Analysis solution."
 
 Parameters:
   DataplaneEndpoint:
@@ -29,6 +29,11 @@ Resources:
   # WebsiteBucketNameFunction - derive a name for the website bucket based on the lower case stack name.
   WebsiteBucketNameFunction:
     Type: AWS::Lambda::Function
+    Metadata:
+      cfn_nag:
+        rules_to_suppress:
+          - id: W89
+            reason: "This resource does not need to access any other resource provisioned within a VPC."
     Properties:
       Code:
         ZipFile: |
@@ -42,6 +47,7 @@ Resources:
       Handler: index.handler
       Runtime: python3.8
       Role: !GetAtt WebsiteBucketNameExecutionRole.Arn
+      ReservedConcurrentExecutions: 0
 
   WebsiteBucketNameFunctionPermissions:
     Type: AWS::Lambda::Permission
@@ -201,7 +207,7 @@ Resources:
             ResponseCode: 200
         IPV6Enabled: true
         ViewerCertificate:
-          CloudFrontDefaultCertificate: true
+          MinimumProtocolVersion: "TLSv1.2_2019"
         Enabled: true
         HttpVersion: 'http2'
 
@@ -255,6 +261,11 @@ Resources:
 
   WebsiteDeployHelper:
     Type: AWS::Lambda::Function
+    Metadata:
+      cfn_nag:
+        rules_to_suppress:
+          - id: W89
+            reason: "This resource does not need to access any other resource provisioned within a VPC."
     Properties:
       Code:
         S3Bucket:  !Join ["-", [!FindInMap ["SourceCode", "General", "RegionalS3Bucket"], Ref: "AWS::Region"]]
@@ -271,6 +282,7 @@ Resources:
       Role: !GetAtt WebsiteHelperRole.Arn
       Runtime: python3.6
       Timeout: 900
+      ReservedConcurrentExecutions: 0
       Environment:
         Variables:
           DataplaneEndpoint: !Ref DataplaneEndpoint

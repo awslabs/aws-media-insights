@@ -1,16 +1,19 @@
 AWSTemplateFormatVersion: "2010-09-09"
-Description: (SO0042) - aws-content-analysis. This is the base AWS CloudFormation template that provisions resources for the AWS Content Analysis solution.
+Description: "(SO0042) - aws-content-analysis. This is the base AWS CloudFormation template that provisions resources for the AWS Content Analysis solution over an existing Media Insights Engine stack."
 
 Parameters:
+  MieStackName:
+    Description: Name of the Media Insights Engine framework stack
+    Type: String
   AdminEmail:
     Description: Email address of the Content Analysis Administrator
     Type: String
   ElasticSearchNodeSize:
     Description: "The node type to be provisioned for the Elasticsearch cluster"
     Type: String
-    Default: "t3.small.elasticsearch"
+    Default: "t2.small.elasticsearch"
     AllowedValues:
-      - "t3.small.elasticsearch"
+      - "t2.small.elasticsearch"
       - "m4.large.elasticsearch"
       - "m4.xlarge.elasticsearch"
       - "c4.large.elasticsearch"
@@ -19,42 +22,14 @@ Parameters:
       - "r4.xlarge.elasticsearch"
 
 Mappings:
-  MediaInsightsEngine:
-    Release:
-      Version: "v2.0.5"
   ContentAnalysisApp:
     SourceCode:
       GlobalS3Bucket: "%%GLOBAL_BUCKET_NAME%%"
       TemplateKeyPrefix: "aws-content-analysis/%%VERSION%%"
 
 Resources:
-  # Deploy MIE Framework
-
-  MieStack:
-    Type: "AWS::CloudFormation::Stack"
-    Properties:
-      TemplateURL: !Join
-        - ""
-        - - "https://"
-          - "rodeolabz-"
-          - !Ref AWS::Region
-          - ".s3."
-          - !Ref AWS::Region
-          - ".amazonaws.com/"
-          - "aws-media-insights-engine/"
-          - !FindInMap
-            - MediaInsightsEngine
-            - Release
-            - Version
-          - "/media-insights-stack.template"
-      Parameters:
-        DeployAnalyticsPipeline: Yes
-        DeployTestResources: No
-        MaxConcurrentWorkflows: 5
-        EnableXrayTrace: Yes
 
   # Deploy Elasticsearch
-
   ContentAnalysisElasticsearchStack:
     Type: "AWS::CloudFormation::Stack"
     Properties:
@@ -65,7 +40,7 @@ Resources:
             - ContentAnalysisApp
             - SourceCode
             - GlobalS3Bucket
-          - ".s3."
+          - .s3.
           - !Ref AWS::Region
           - ".amazonaws.com/"
           - !FindInMap
@@ -74,8 +49,12 @@ Resources:
             - TemplateKeyPrefix
           - "/aws-content-analysis-elasticsearch.template"
       Parameters:
-        AnalyticsStreamArn: !GetAtt MieStack.Outputs.AnalyticsStreamArn
-        MieDataplaneBucket: !GetAtt MieStack.Outputs.DataplaneBucket
+        AnalyticsStreamArn:
+          Fn::ImportValue:
+            !Sub "${MieStackName}:AnalyticsStreamArn"
+        MieDataplaneBucket:
+          Fn::ImportValue:
+            !Sub "${MieStackName}:DataplaneBucket"
         NodeType: !Ref ElasticSearchNodeSize
 
   # Deploy Auth stack
@@ -90,7 +69,7 @@ Resources:
             - ContentAnalysisApp
             - SourceCode
             - GlobalS3Bucket
-          - ".s3."
+          - .s3.
           - !Ref AWS::Region
           - ".amazonaws.com/"
           - !FindInMap
@@ -100,11 +79,71 @@ Resources:
           - "/aws-content-analysis-auth.template"
       Parameters:
         AdminEmail: !Ref AdminEmail
-        WorkflowApiId: !GetAtt MieStack.Outputs.WorkflowApiRestID
-        DataplaneApiId: !GetAtt MieStack.Outputs.DataplaneApiRestID
+        WorkflowApiId:
+          Fn::ImportValue:
+            !Sub "${MieStackName}:WorkflowApiId"
+        DataplaneApiId:
+          Fn::ImportValue:
+            !Sub "${MieStackName}:DataplaneApiId"
         ElasticDomainArn: !GetAtt ContentAnalysisElasticsearchStack.Outputs.DomainArn
-        DataplaneBucket: !GetAtt MieStack.Outputs.DataplaneBucket
-        ParentStackName: !Ref MieStack
+        DataplaneBucket:
+          Fn::ImportValue:
+            !Sub "${MieStackName}:DataplaneBucket"
+        ParentStackName: !Ref AWS::StackId
+
+  # Deploy Video Workflow
+  CompleteVideoWorkflow:
+    Type: "AWS::CloudFormation::Stack"
+    Properties:
+      TemplateURL: !Join
+        - ""
+        - - "https://"
+          - !FindInMap
+            - ContentAnalysisApp
+            - SourceCode
+            - GlobalS3Bucket
+          - .s3.
+          - !Ref AWS::Region
+          - ".amazonaws.com/"
+          - !FindInMap
+            - ContentAnalysisApp
+            - SourceCode
+            - TemplateKeyPrefix
+          - "/aws-content-analysis-video-workflow.template"
+      Parameters:
+        WorkflowCustomResourceArn:
+          Fn::ImportValue:
+            !Sub "${MieStackName}:WorkflowCustomResourceArn"
+        OperatorLibraryStack:
+          Fn::ImportValue:
+            !Sub "${MieStackName}:OperatorLibraryStack"
+
+  # Deploy image workflow
+  CompleteImageWorkflow:
+    Type: "AWS::CloudFormation::Stack"
+    Properties:
+      TemplateURL: !Join
+        - ""
+        - - "https://"
+          - !FindInMap
+            - ContentAnalysisApp
+            - SourceCode
+            - GlobalS3Bucket
+          - .s3.
+          - !Ref AWS::Region
+          - ".amazonaws.com/"
+          - !FindInMap
+            - ContentAnalysisApp
+            - SourceCode
+            - TemplateKeyPrefix
+          - "/aws-content-analysis-image-workflow.template"
+      Parameters:
+        WorkflowCustomResourceArn:
+          Fn::ImportValue:
+            !Sub "${MieStackName}:WorkflowCustomResourceArn"
+        OperatorLibraryStack:
+          Fn::ImportValue:
+            !Sub "${MieStackName}:OperatorLibraryStack"
 
   ContentAnalysisWebStack:
     Type: "AWS::CloudFormation::Stack"
@@ -116,7 +155,7 @@ Resources:
             - ContentAnalysisApp
             - SourceCode
             - GlobalS3Bucket
-          - ".s3."
+          - .s3.
           - !Ref AWS::Region
           - ".amazonaws.com/"
           - !FindInMap
@@ -125,74 +164,28 @@ Resources:
             - TemplateKeyPrefix
           - "/aws-content-analysis-web.template"
       Parameters:
-        DataplaneEndpoint: !GetAtt MieStack.Outputs.DataplaneApiEndpoint
-        WorkflowEndpoint: !GetAtt MieStack.Outputs.WorkflowApiEndpoint
+        DataplaneEndpoint:
+          Fn::ImportValue:
+            !Sub "${MieStackName}:DataplaneApiEndpoint"
+        WorkflowEndpoint:
+          Fn::ImportValue:
+            !Sub "${MieStackName}:WorkflowApiEndpoint"
         ElasticEndpoint: !GetAtt ContentAnalysisElasticsearchStack.Outputs.ElasticEndpoint
-        DataplaneBucket: !GetAtt MieStack.Outputs.DataplaneBucket
+        DataplaneBucket:
+          Fn::ImportValue:
+            !Sub "${MieStackName}:DataplaneBucket"
         UserPoolId: !GetAtt ContentAnalysisAuthStack.Outputs.UserPoolId
         IdentityPoolId: !GetAtt ContentAnalysisAuthStack.Outputs.IdentityPoolId
         PoolClientId: !GetAtt ContentAnalysisAuthStack.Outputs.UserPoolClientId
 
-  # Deploy video workflow
-
-  CompleteVideoWorkflow:
-    Type: "AWS::CloudFormation::Stack"
-    Properties:
-      TemplateURL: !Join
-        - ""
-        - - "https://"
-          - !FindInMap
-            - ContentAnalysisApp
-            - SourceCode
-            - GlobalS3Bucket
-          - ".s3."
-          - !Ref AWS::Region
-          - ".amazonaws.com/"
-          - !FindInMap
-            - ContentAnalysisApp
-            - SourceCode
-            - TemplateKeyPrefix
-          - "/aws-content-analysis-video-workflow.template"
-      Parameters:
-        WorkflowCustomResourceArn:
-          Fn::GetAtt:
-            - MieStack
-            - Outputs.WorkflowCustomResourceArn
-        OperatorLibraryStack:
-          Fn::GetAtt:
-            - MieStack
-            - Outputs.OperatorLibraryStack
-
-  # Deploy image workflow
-
-  CompleteImageWorkflow:
-    Type: "AWS::CloudFormation::Stack"
-    Properties:
-      TemplateURL: !Join
-        - ""
-        - - "https://"
-          - !FindInMap
-            - ContentAnalysisApp
-            - SourceCode
-            - GlobalS3Bucket
-          - ".s3."
-          - !Ref AWS::Region
-          - ".amazonaws.com/"
-          - !FindInMap
-            - ContentAnalysisApp
-            - SourceCode
-            - TemplateKeyPrefix
-          - "/aws-content-analysis-image-workflow.template"
-      Parameters:
-        WorkflowCustomResourceArn:
-          Fn::GetAtt:
-            - MieStack
-            - Outputs.WorkflowCustomResourceArn
-        OperatorLibraryStack:
-          Fn::GetAtt:
-            - MieStack
-            - Outputs.OperatorLibraryStack
-
 Outputs:
-  ContentAnalyisSolution:
+  CloudfrontUrl:
     Value: !GetAtt ContentAnalysisWebStack.Outputs.CloudfrontUrl
+  ElasticEndpoint:
+    Value: !GetAtt ContentAnalysisElasticsearchStack.Outputs.ElasticEndpoint
+  UserPoolId:
+    Value: !GetAtt ContentAnalysisAuthStack.Outputs.UserPoolId
+  IdentityPoolId:
+    Value: !GetAtt ContentAnalysisAuthStack.Outputs.IdentityPoolId
+  UserPoolClientId:
+    Value: !GetAtt ContentAnalysisAuthStack.Outputs.UserPoolClientId

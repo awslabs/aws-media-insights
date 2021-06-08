@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: "2010-09-09"
-Description: "Media Insights Engine - Elasticsearch Consumer stack"
+Description: "(SO0042) - aws-content-analysis. Elasticsearch Consumer stack"
 
 Parameters:
   DeployElasticsearch:
@@ -56,6 +56,11 @@ Resources:
 
   ESDomain:
     Type: "AWS::Elasticsearch::Domain"
+    Metadata:
+      cfn_nag:
+        rules_to_suppress:
+          - id: W90
+            reason: "This resource does not need to access any other resource provisioned within a VPC."
     Properties:
       EBSOptions:
         EBSEnabled: true
@@ -81,6 +86,14 @@ Resources:
 
   ElasticsearchConsumerLambda:
     Type: "AWS::Lambda::Function"
+    Metadata:
+      cfn_nag:
+        rules_to_suppress:
+          - id: W92
+            reason: "This resource does not need to access any other resource provisioned within a VPC."
+          - id: W89
+            reason: "This resource does not need to access any other resource provisioned within a VPC."
+
     Properties:
       Handler: "lambda_handler.lambda_handler"
       Role: !GetAtt ElasticConsumerRole.Arn
@@ -97,6 +110,7 @@ Resources:
       Runtime: "python3.7"
       Timeout: 900
       MemorySize: 2048
+      ReservedConcurrentExecutions: 0
       Environment:
         Variables:
           EsEndpoint: !GetAtt ESDomain.DomainEndpoint
