@@ -47,7 +47,7 @@ Resources:
       Handler: index.handler
       Runtime: python3.8
       Role: !GetAtt WebsiteBucketNameExecutionRole.Arn
-      ReservedConcurrentExecutions: 0
+      ReservedConcurrentExecutions: 100
 
   WebsiteBucketNameFunctionPermissions:
     Type: AWS::Lambda::Permission
@@ -282,7 +282,7 @@ Resources:
       Role: !GetAtt WebsiteHelperRole.Arn
       Runtime: python3.6
       Timeout: 900
-      ReservedConcurrentExecutions: 0
+      ReservedConcurrentExecutions: 100
       Environment:
         Variables:
           DataplaneEndpoint: !Ref DataplaneEndpoint

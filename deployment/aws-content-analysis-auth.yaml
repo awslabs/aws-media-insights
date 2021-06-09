@@ -90,7 +90,7 @@ Resources:
         Role: !GetAtt CognitoRoleMapperLambdaExecutionRole.Arn
         Runtime: python3.7
         Timeout: 30
-        ReservedConcurrentExecutions: 0
+        ReservedConcurrentExecutions: 100
 
   CognitoRoleMapperLambdaExecutionRole:
       Type: 'AWS::IAM::Role'
