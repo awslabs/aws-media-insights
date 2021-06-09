@@ -168,6 +168,11 @@ Resources:
 
   ContentAnalysisWebsiteDistribution:
     Type: AWS::CloudFront::Distribution
+    Metadata:
+      cfn_nag:
+        rules_to_suppress:
+          - id: W70
+            reason: "Specifying a TLS version is unnecessary because we're using the CloudFront default certificate."
     Properties:
       DistributionConfig:
         Comment: "Website distribution for Content Analysis Solution"
@@ -207,7 +212,7 @@ Resources:
             ResponseCode: 200
         IPV6Enabled: true
         ViewerCertificate:
-          MinimumProtocolVersion: "TLSv1.2_2019"
+          CloudFrontDefaultCertificate: true
         Enabled: true
         HttpVersion: 'http2'
 
