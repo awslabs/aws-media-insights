@@ -267,7 +267,7 @@ zip -q -g dist/esconsumer.zip ./*.py
 cp "./dist/esconsumer.zip" "$regional_dist_dir/esconsumer.zip"
 
 echo "------------------------------------------------------------------------------"
-echo "Website"
+echo "Build vue website"
 echo "------------------------------------------------------------------------------"
 
 echo "Building Vue.js website"
@@ -281,14 +281,35 @@ cp -r ./dist/* "$regional_dist_dir"/website/
 rm -rf ./dist
 
 echo "------------------------------------------------------------------------------"
-echo "Website Helper"
+echo "Generate webapp manifest file"
+echo "------------------------------------------------------------------------------"
+# This manifest file contains a list of all the webapp files. It is necessary in
+# order to use the least privileges for deploying the webapp.
+#
+# Details: The website_helper.py Lambda function needs this list in order to copy
+# files from $regional_dist_dir/website to the ContentAnalysisWebsiteBucket (see aws-content-analysis-web.yaml).  Since the manifest file is computed during build
+# time, the website_helper.py Lambda can use that to figure out what files to copy
+# instead of doing a list bucket operation, which would require ListBucket permission.
+# Furthermore, the S3 bucket used to host AWS solutions (s3://solutions-reference)
+# disallows ListBucket access, so the only way to copy files from
+# s3://solutions-reference/aws-content-analysis/latest/website to
+# ContentAnalysisWebsiteBucket is to use said manifest file.
+#
+cd $regional_dist_dir"/website/" || exit 1
+manifest=(`find . -type f | sed 's|^./||'`)
+manifest_json=$(IFS=,;printf "%s" "${manifest[*]}")
+echo "[\"$manifest_json\"]" | sed 's/,/","/g' > $helper_dir/webapp-manifest.json
+cat $helper_dir/webapp-manifest.json
+
+echo "------------------------------------------------------------------------------"
+echo "Build website helper function"
 echo "------------------------------------------------------------------------------"
 
 echo "Building website helper function"
 cd "$helper_dir" || exit 1
 [ -e dist ] && rm -r dist
 mkdir -p dist
-zip -q -g ./dist/websitehelper.zip ./website_helper.py
+zip -q -g ./dist/websitehelper.zip ./website_helper.py webapp-manifest.json
 cp "./dist/websitehelper.zip" "$regional_dist_dir/websitehelper.zip"
 
 # Skip copy dist to S3 if building for solution builder because

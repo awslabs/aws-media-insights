@@ -60,12 +60,13 @@ Resources:
           rules_to_suppress:
             - id: W89
               reason: "This resource does not need to access any other resource provisioned within a VPC."
+            - id: W92
+              reason: "This function does not performance optimization, so the default concurrency limits suffice."
       Properties:
         Code:
           ZipFile: |
             import json
             import cfnresponse
-
 
             def handler(event, context):
                 print("Event: %s" % json.dumps(event))
@@ -90,7 +91,6 @@ Resources:
         Role: !GetAtt CognitoRoleMapperLambdaExecutionRole.Arn
         Runtime: python3.7
         Timeout: 30
-        ReservedConcurrentExecutions: 100
 
   CognitoRoleMapperLambdaExecutionRole:
       Type: 'AWS::IAM::Role'

@@ -34,6 +34,8 @@ Resources:
         rules_to_suppress:
           - id: W89
             reason: "This resource does not need to access any other resource provisioned within a VPC."
+          - id: W92
+            reason: "This function does not performance optimization, so the default concurrency limits suffice."
     Properties:
       Code:
         ZipFile: |
@@ -47,7 +49,6 @@ Resources:
       Handler: index.handler
       Runtime: python3.8
       Role: !GetAtt WebsiteBucketNameExecutionRole.Arn
-      ReservedConcurrentExecutions: 100
 
   WebsiteBucketNameFunctionPermissions:
     Type: AWS::Lambda::Permission
@@ -271,6 +272,8 @@ Resources:
         rules_to_suppress:
           - id: W89
             reason: "This resource does not need to access any other resource provisioned within a VPC."
+          - id: W92
+            reason: "This function does not performance optimization, so the default concurrency limits suffice."
     Properties:
       Code:
         S3Bucket:  !Join ["-", [!FindInMap ["SourceCode", "General", "RegionalS3Bucket"], Ref: "AWS::Region"]]
@@ -287,7 +290,6 @@ Resources:
       Role: !GetAtt WebsiteHelperRole.Arn
       Runtime: python3.6
       Timeout: 900
-      ReservedConcurrentExecutions: 100
       Environment:
         Variables:
           DataplaneEndpoint: !Ref DataplaneEndpoint

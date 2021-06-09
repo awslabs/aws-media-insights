@@ -89,11 +89,10 @@ Resources:
     Metadata:
       cfn_nag:
         rules_to_suppress:
-          - id: W92
-            reason: "This resource does not need to access any other resource provisioned within a VPC."
           - id: W89
             reason: "This resource does not need to access any other resource provisioned within a VPC."
-
+          - id: W92
+            reason: "This function does not performance optimization, so the default concurrency limits suffice."
     Properties:
       Handler: "lambda_handler.lambda_handler"
       Role: !GetAtt ElasticConsumerRole.Arn
@@ -110,7 +109,6 @@ Resources:
       Runtime: "python3.7"
       Timeout: 900
       MemorySize: 2048
-      ReservedConcurrentExecutions: 101
       Environment:
         Variables:
           EsEndpoint: !GetAtt ESDomain.DomainEndpoint
