@@ -35,13 +35,7 @@ Resources:
     Properties:
       TemplateURL: !Join
         - ""
-        - - "https://"
-          - "rodeolabz-"
-          - !Ref AWS::Region
-          - ".s3."
-          - !Ref AWS::Region
-          - ".amazonaws.com/"
-          - "aws-media-insights-engine/"
+        - - "https://solutions-reference.s3.amazonaws.com/aws-media-insights-engine/"
           - !FindInMap
             - MediaInsightsEngine
             - Release
