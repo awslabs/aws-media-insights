@@ -65,9 +65,7 @@ Resources:
             - ContentAnalysisApp
             - SourceCode
             - GlobalS3Bucket
-          - ".s3."
-          - !Ref AWS::Region
-          - ".amazonaws.com/"
+          - ".s3.amazonaws.com/"
           - !FindInMap
             - ContentAnalysisApp
             - SourceCode
@@ -90,9 +88,7 @@ Resources:
             - ContentAnalysisApp
             - SourceCode
             - GlobalS3Bucket
-          - ".s3."
-          - !Ref AWS::Region
-          - ".amazonaws.com/"
+          - ".s3.amazonaws.com/"
           - !FindInMap
             - ContentAnalysisApp
             - SourceCode
@@ -116,9 +112,7 @@ Resources:
             - ContentAnalysisApp
             - SourceCode
             - GlobalS3Bucket
-          - ".s3."
-          - !Ref AWS::Region
-          - ".amazonaws.com/"
+          - ".s3.amazonaws.com/"
           - !FindInMap
             - ContentAnalysisApp
             - SourceCode
@@ -145,9 +139,7 @@ Resources:
             - ContentAnalysisApp
             - SourceCode
             - GlobalS3Bucket
-          - ".s3."
-          - !Ref AWS::Region
-          - ".amazonaws.com/"
+          - ".s3.amazonaws.com/"
           - !FindInMap
             - ContentAnalysisApp
             - SourceCode
@@ -175,9 +167,7 @@ Resources:
             - ContentAnalysisApp
             - SourceCode
             - GlobalS3Bucket
-          - ".s3."
-          - !Ref AWS::Region
-          - ".amazonaws.com/"
+          - ".s3.amazonaws.com/"
           - !FindInMap
             - ContentAnalysisApp
             - SourceCode
