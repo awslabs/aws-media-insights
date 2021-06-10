@@ -324,14 +324,17 @@
           key = this.s3_uri.split(this.s3_uri.split("/")[2] + '/')[1];
         }
         if (this.mediaType === "video") {
-          const media_key = (this.s3_uri.split(this.s3_uri.split("/")[2])[1].replace('/input/public/upload', ''))
-          const proxy_encode_key = media_key.split(".").slice(0,-1).join('.') + "_proxy.mp4";
-          key = proxy_encode_key.replace("/", "")
+          const dataplane_bucket = this.s3_uri.split("/")[2]
+          const input_media_key = this.s3_uri.split(dataplane_bucket)[1]
+          const media_filename = input_media_key.replace('/public/upload', '')
+          const proxy_encode_filename = (media_filename.split(".").slice(0,-1).join('.') + "_proxy.mp4").replace("/", "");
+
+          const proxy_encode_key = 'private/assets/' + this.$route.params.asset_id + '/' + proxy_encode_filename
+          key = proxy_encode_key
         }
         const data = { "S3Bucket": bucket, "S3Key": key };
 
         // get presigned URL to video file in S3
-
         let apiName = 'mieDataplaneApi'
         let path = 'download'
         let requestOpts = {
