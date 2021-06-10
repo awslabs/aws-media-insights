@@ -13,7 +13,7 @@
     "aws-amplify-vue": "^2.1.5",
     "axios": ">=0.21.1",
     "bad-words": "^3.0.4",
-    "chart.js": "^3.3.2",
+    "chart.js": "^2.9.4",
     "core-js": "^3.14.0",
     "dropzone": "^5.7.0",
     "jquery": "^3.4.1",
