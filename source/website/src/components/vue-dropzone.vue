@@ -407,11 +407,6 @@ export default {
         vm.file = null
       }
     },
-    setAWSSigningURL(location) {
-      if (this.isS3) {
-        this.awss3.signingURL = location;
-      }
-    }
   }
 }
 
