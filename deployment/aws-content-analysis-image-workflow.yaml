@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: "AWS Content Analysis Workflow - Workflow to run image analyses"
+Description: "(SO0042) - aws-content-analysis. Workflow to run image analyses."
 
 Parameters:
   WorkflowCustomResourceArn:

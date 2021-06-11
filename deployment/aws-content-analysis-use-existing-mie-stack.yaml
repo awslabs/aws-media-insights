@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: "2010-09-09"
-Description: AWS Content Analysis - Deploys the AWS Content Analysis Application
+Description: "(SO0042) - aws-content-analysis. This is the base AWS CloudFormation template that provisions resources for the AWS Content Analysis solution over an existing Media Insights Engine stack."
 
 Parameters:
   MieStackName:
@@ -11,9 +11,9 @@ Parameters:
   ElasticSearchNodeSize:
     Description: "The node type to be provisioned for the Elasticsearch cluster"
     Type: String
-    Default: "t2.small.elasticsearch"
+    Default: "t3.small.elasticsearch"
     AllowedValues:
-      - "t2.small.elasticsearch"
+      - "t3.small.elasticsearch"
       - "m4.large.elasticsearch"
       - "m4.xlarge.elasticsearch"
       - "c4.large.elasticsearch"
@@ -24,10 +24,8 @@ Parameters:
 Mappings:
   ContentAnalysisApp:
     SourceCode:
-      S3Bucket: "%%BUCKET_NAME%%"
-      CodeKeyPrefix: "content-analysis-solution/%%VERSION%%/code"
-      TemplateKeyPrefix: "content-analysis-solution/%%VERSION%%/cf"
-      WebsitePrefix: "content-analysis-solution/%%VERSION%%/code/website"
+      GlobalS3Bucket: "%%GLOBAL_BUCKET_NAME%%"
+      TemplateKeyPrefix: "aws-content-analysis/%%VERSION%%"
 
 Resources:
 
@@ -41,10 +39,8 @@ Resources:
           - !FindInMap
             - ContentAnalysisApp
             - SourceCode
-            - S3Bucket
-          - .s3.
-          - !Ref AWS::Region
-          - ".amazonaws.com/"
+            - GlobalS3Bucket
+          - ".s3.amazonaws.com/"
           - !FindInMap
             - ContentAnalysisApp
             - SourceCode
@@ -70,10 +66,8 @@ Resources:
           - !FindInMap
             - ContentAnalysisApp
             - SourceCode
-            - S3Bucket
-          - .s3.
-          - !Ref AWS::Region
-          - ".amazonaws.com/"
+            - GlobalS3Bucket
+          - ".s3.amazonaws.com/"
           - !FindInMap
             - ContentAnalysisApp
             - SourceCode
@@ -103,10 +97,8 @@ Resources:
           - !FindInMap
             - ContentAnalysisApp
             - SourceCode
-            - S3Bucket
-          - .s3.
-          - !Ref AWS::Region
-          - ".amazonaws.com/"
+            - GlobalS3Bucket
+          - ".s3.amazonaws.com/"
           - !FindInMap
             - ContentAnalysisApp
             - SourceCode
@@ -130,10 +122,8 @@ Resources:
           - !FindInMap
             - ContentAnalysisApp
             - SourceCode
-            - S3Bucket
-          - .s3.
-          - !Ref AWS::Region
-          - ".amazonaws.com/"
+            - GlobalS3Bucket
+          - ".s3.amazonaws.com/"
           - !FindInMap
             - ContentAnalysisApp
             - SourceCode
@@ -156,10 +146,8 @@ Resources:
           - !FindInMap
             - ContentAnalysisApp
             - SourceCode
-            - S3Bucket
-          - .s3.
-          - !Ref AWS::Region
-          - ".amazonaws.com/"
+            - GlobalS3Bucket
+          - ".s3.amazonaws.com/"
           - !FindInMap
             - ContentAnalysisApp
             - SourceCode

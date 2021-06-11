@@ -3,6 +3,7 @@ const { promisify } = require('util')
 
 let url = process.env.WEBAPP_URL;
 let temp_password = process.env.TEMP_PASSWORD;
+let invitation_email_recipient = process.env.INVITATION_EMAIL_RECIPIENT;
 
 (async () => {
     console.log("Loading " + url)
@@ -18,7 +19,7 @@ let temp_password = process.env.TEMP_PASSWORD;
     await page.setViewport({width: 1280, height: 926});
     await page.goto(url, {waitUntil: 'networkidle0'});
     // Type in the username
-    await page.type('input', 's3sink@bigendiandata.com')
+    await page.type('input', invitation_email_recipient)
     // Type in the password
     await page.type('#app > div > div > div > div.Section__sectionBody___3DCrX > div:nth-child(2) > input', temp_password)
 

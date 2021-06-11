@@ -18,15 +18,18 @@
     >
       <Loading />
     </div>
-    <div class="wrapper">
+    <div
+      v-else
+      class="wrapper"
+    >
       <b-table
         responsive
         fixed
-        :items="entities"
+        :items="key_phrases"
         :fields="fields"
         :sort-by="sortBy"
       >
-        <template v-slot:cell(Confidence)="data">
+        <template #cell(Confidence)="data">
           {{ (data.item.Confidence * 1).toFixed(2) }}
         </template>
       </b-table>
@@ -39,50 +42,49 @@ import Loading from '@/components/Loading.vue'
 import { mapState } from 'vuex'
 
 export default {
-  name: "Entities",
+  name: "KeyPhrases",
   components: {
     Loading
-    },
+  },
   data() {
     return {
       Confidence: 90,
       sortBy: "BeginOffset",
       fields: [
-        { key: 'EntityText', sortable: true },
-        { key: 'EntityType', sortable: true },
+        { key: 'PhraseText', sortable: false },
         { key: 'Confidence', sortable: true },
         { key: 'BeginOffset', sortable: true },
         { key: 'EndOffset', sortable: true },
       ],
-      entities: [],
+      key_phrases: [],
       isBusy: false,
-      operator: "entities"
+      operator: "key_phrases"
     }
   },
   computed: {
     ...mapState(['player']),
   },
   deactivated: function () {
-    console.log('deactivated component:', this.operator)
+    console.log('deactivated component:', this.operator);
     // clearing this value after every deactivation so we dont carry this huge amount of data in memory
-    this.entities = []
+    this.key_phrases = []
   },
   activated: function () {
     console.log('activated component:', this.operator);
     this.fetchAssetData();
   },
   beforeDestroy: function () {
-    this.entities = []
+    this.key_phrases = []
   },
   methods: {
     updateConfidence (event) {
-      this.isBusy = true;
-      this.entities = [];
-      this.Confidence = event.target.value;
-      this.fetchAssetData()
+        this.isBusy = true;
+        this.key_phrases = [];
+        this.Confidence = event.target.value;
+        this.fetchAssetData()
     },
     async fetchAssetData () {
-      let query = 'AssetId:'+this.$route.params.asset_id+' Confidence:>'+this.Confidence+' _index:mieentities';
+      let query = 'AssetId:'+this.$route.params.asset_id+' Confidence:>'+this.Confidence+' _index:miekey_phrases';
       let apiName = 'contentAnalysisElasticsearch';
       let path = '/_search';
       let apiParams = {
@@ -96,8 +98,8 @@ export default {
       else {
         let result = await response;
         let data = result.hits.hits;
-        for (var i = 0, len = data.length; i < len; i++) {
-          this.entities.push({ "EntityText": data[i]._source.EntityText, "EntityType": data[i]._source.EntityType, "Confidence": data[i]._source.Confidence, "BeginOffset": data[i]._source.BeginOffset, "EndOffset": data[i]._source.EndOffset})
+        for (let i = 0, len = data.length; i < len; i++) {
+          this.key_phrases.push({ "PhraseText": data[i]._source.PhraseText, "Confidence": data[i]._source.Confidence, "BeginOffset": data[i]._source.BeginOffset, "EndOffset": data[i]._source.EndOffset})
         }
         this.isBusy = false
       }

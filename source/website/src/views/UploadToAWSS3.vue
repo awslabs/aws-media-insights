@@ -44,15 +44,15 @@
       </b-button>
       <br>
       <!-- TODO: add a drop-down option in this modal to choose update workflow, then update workflowConfigWithInput to include the appropriate workflow config -->
-<!--      <b-button-->
-<!--        :pressed="false"-->
-<!--        size="sm"-->
-<!--        variant="link"-->
-<!--        class="text-decoration-none"-->
-<!--        @click="showExecuteApi = true"-->
-<!--      >-->
-<!--        Show API request to run workflow-->
-<!--      </b-button>-->
+      <b-button
+        :pressed="false"
+        size="sm"
+        variant="link"
+        class="text-decoration-none"
+        @click="showExecuteApi = true"
+      >
+        Show API request to run workflow
+      </b-button>
       <b-modal
         v-model="showExecuteApi"
         scrollable
@@ -79,13 +79,37 @@
             <b-card header="Video Operators">
               <b-form-group>
                 <b-form-checkbox-group
-                    id="checkbox-group-1"
-                    v-model="enabledOperators"
-                    :options="videoOperators"
-                    name="flavour-1"
+                  id="checkbox-group-1"
+                  v-model="enabledOperators"
+                  :options="videoOperators"
+                  name="flavour-1"
                 ></b-form-checkbox-group>
                 <label>Thumbnail position: </label>
                 <b-form-input v-model="thumbnail_position" type="range" min="1" max="20" step="1"></b-form-input> {{ thumbnail_position }} sec
+                <b-form-input v-if="enabledOperators.includes('genericDataLookup')" id="generic_data_filename" v-model="genericDataFilename" placeholder="Enter S3 key for data file" ></b-form-input>
+                <b-button
+                  v-if="enabledOperators.includes('genericDataLookup')"
+                  :pressed="false"
+                  size="sm"
+                  variant="link"
+                  class="text-decoration-none"
+                  @click="showGenericOperatorHelp = true"
+                >
+                  How do I use generic data?
+                </b-button>
+                <b-modal
+                  v-model="showGenericOperatorHelp"
+                  scrollable
+                  title="Using generic metadata"
+                  ok-only
+                >
+                  This option allows you to use a precomputed JSON dataset as metadata for a video. The file must be located in <code>s3://{{ DATAPLANE_BUCKET }}/</code>. Specify the S3 key for your JSON file in the workflow configuration form.
+                  <br><br>
+                  You may upload json files alongside media files on this page. In that case, enter <code>public/upload/[filename.json]</code> as the S3 key for the data file.
+                  <br><br>
+                  The <code>generic_data_lookup.py</code> operator loads the specified JSON data into the asset metadata table in DynamoDB. It requires that the JSON data be a dict, not a list. Don't forget to extend the Elasticsearch consumer (source/consumers/elastic/lambda_handler.py) if you want the generic data to be added to Elasticsearch so it can be searched and rendered in this front-end application.
+                </b-modal>
+
                 <b-form-input v-if="enabledOperators.includes('faceSearch')" id="face_collection_id" v-model="faceCollectionId" placeholder="Enter face collection id"></b-form-input>
               </b-form-group>
               <div v-if="videoFormError" style="color:red">
@@ -124,15 +148,15 @@
                   <b-form-select v-model="targetLanguageCode" :options="translateLanguages"></b-form-select>
                 </div>
                 <b-form-checkbox
-                    v-if="enabledOperators.includes('ComprehendEntities') || enabledOperators.includes('ComprehendKeyPhrases')"
-                    v-model="ComprehendEncryption"
+                  v-if="enabledOperators.includes('ComprehendEntities') || enabledOperators.includes('ComprehendKeyPhrases')"
+                  v-model="ComprehendEncryption"
                 >
                   Encrypt Comprehend job
                 </b-form-checkbox>
                 <b-form-input
-                    v-if="ComprehendEncryption && (enabledOperators.includes('ComprehendEntities') || enabledOperators.includes('ComprehendKeyPhrases'))"
-                    v-model="kmsKeyId"
-                    placeholder="Enter KMS key ID"
+                  v-if="ComprehendEncryption && (enabledOperators.includes('ComprehendEntities') || enabledOperators.includes('ComprehendKeyPhrases'))"
+                  v-model="kmsKeyId"
+                  placeholder="Enter KMS key ID"
                 ></b-form-input>
               </b-form-group>
               <div v-if="textFormError" style="color:red">
@@ -165,7 +189,7 @@
         fixed
         :items="executed_assets"
       >
-        <template v-slot:cell(workflow_status)="data">
+        <template #cell(workflow_status)="data">
           <a v-if="data.item.workflow_status !== 'Queued'" href="" @click.stop.prevent="openWindow(data.item.state_machine_console_link)">{{ data.item.workflow_status }}</a>
           <div v-if="data.item.workflow_status === 'Queued'">
             {{ data.item.workflow_status }}
@@ -217,6 +241,7 @@ export default {
       curlCommand2: '',
       showWorkflowStatusApi: false,
       showExecuteApi: false,
+      showGenericOperatorHelp: false,
       requestURL: "",
       requestBody: "",
       requestType: "",
@@ -265,7 +290,7 @@ export default {
         { text: "Face Detection", value: "faceDetection" },
         { text: "Word Detection", value: "textDetection" },
         { text: "Face Search", value: "faceSearch" },
-        { text: "Generic Data Lookup (video only)", value: "genericDataLookup" }
+        { html: "Generic Data Lookup", value: "genericDataLookup" },
       ],
       audioOperators: [{ text: "Transcribe", value: "TranscribeVideo" }],
       textOperators: [
@@ -436,15 +461,15 @@ export default {
       if (this.enabledOperators.includes("genericDataLookup")) {
         // Validate that the collection ID is defined
         if (this.genericDataFilename === "") {
-          return "Data filename is required.";
+          return "Generic data filename is required.";
         }
         // Validate that the collection ID matches required regex
         else if (!new RegExp("^.+\\.json$").test(this.genericDataFilename)) {
-          return "Data filename must have .json extension.";
+          return "Generic data filename must have .json extension.";
         }
         // Validate that the data filename is not too long
         else if (this.genericDataFilename.length > 255) {
-          return "Data filename must have fewer than 255 characters.";
+          return "Generic data filename must have fewer than 255 characters.";
         }
       }
       return "";
@@ -594,6 +619,7 @@ export default {
       // This function is just used to pretty print the rest api
       // for workflow execution in a popup modal
       let data = JSON.parse(JSON.stringify(this.workflow_config));
+      data["Name"] = "CasVideoWorkflow"
       data["Input"] = {
         "Media": {
           "Video": {
@@ -755,7 +781,7 @@ export default {
         let wf_id = response.data.Id;
         let executed_asset = {
           asset_id: asset_id,
-          file_name: s3Key,
+          file_name: s3Key.replace('public/upload/', ''),
           workflow_status: "",
           state_machine_console_link: "",
           wf_id: wf_id

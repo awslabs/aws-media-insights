@@ -34,13 +34,15 @@ jobs:
         run: |
           echo "SHORT_SHA=`git rev-parse --short HEAD`" >> $GITHUB_ENV
           DATETIME=$(date '+%s')
-          echo "DIST_OUTPUT_BUCKET=media-insights-engine-frontend-$DATETIME" >> $GITHUB_ENV
+          echo "DIST_OUTPUT_BUCKET=aws-content-analysis-$DATETIME-dist" >> $GITHUB_ENV
+          echo "TEMPLATE_OUTPUT_BUCKET=aws-content-analysis-$DATETIME" >> $GITHUB_ENV
 
       - name: Run build script
         run: |
           cd deployment
           aws s3 mb s3://$DIST_OUTPUT_BUCKET-$REGION --region $REGION
-          ./build.sh ${DIST_OUTPUT_BUCKET}-${REGION} ${VERSION} ${REGION} | tee >( awk '/Without existing MIE deployment/{getline; print}' >template )
+          aws s3 mb s3://$TEMPLATE_OUTPUT_BUCKET --region $REGION
+          ./build-s3-dist.sh --template-bucket ${TEMPLATE_OUTPUT_BUCKET} --code-bucket ${DIST_OUTPUT_BUCKET} --version ${VERSION} --region ${REGION} | tee >( awk '/Without existing MIE deployment/{getline; print}' >template )
 
       - name: Deploy stack
         run: |
@@ -158,16 +160,24 @@ jobs:
         # The checkout action above changes the work dir in a way that breaks
         # the docker commands in this action, so we need to specify work dir
         # explicitly here.
+        # TODO: after moving the aws-media-insights repo to aws-content-analysis, then remove the if statement at the beginning:
         working-directory: /home/runner/work/
         run: |
-          cp -R ./aws-media-insights/aws-media-insights/test .
+          if [ -d ./aws-media-insights/ ]; then
+            cp -R ./aws-media-insights/aws-media-insights/source/website/test .
+          elif [ -d ./aws-content-analysis/ ]; then
+            cp -R ./aws-content-analysis/aws-content-analysis/source/website/test .
+          else
+            echo "ERROR: Cannot find test files"
+            exit 1
+          fi
           cd test/
           echo "Building puppeteer tests"
           npm init -y
           npm i puppeteer --quiet
           docker build --tag=cas-puppeteer:latest . --quiet
           echo "Running puppeteer tests"
-          docker run --rm -v "$PWD":/usr/src/app -e WEBAPP_URL="${{ env.WEBAPP_URL }}" -e TEMP_PASSWORD="${{ env.TEMP_PASSWORD }}" cas-puppeteer:latest
+          docker run --rm -v "$PWD":/usr/src/app -e WEBAPP_URL="${{ env.WEBAPP_URL }}" -e INVITATION_EMAIL_RECIPIENT="${{ secrets.INVITATION_EMAIL_RECIPIENT }}" -e TEMP_PASSWORD="${{ env.TEMP_PASSWORD }}" cas-puppeteer:latest
 
       - name: Clean the test environment
         run: |

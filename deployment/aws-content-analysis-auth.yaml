@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: "2010-09-09"
-Description: AWS Content Analysis - Deploys the AWS Content Analysis Application Cognito Infrastructure
+Description: "(SO0042) - aws-content-analysis. Deploys the AWS Content Analysis Application Cognito Infrastructure"
 
 Parameters:
   AdminEmail:
@@ -55,12 +55,18 @@ Resources:
 
   CognitoRoleMappingTransformer:
       Type: AWS::Lambda::Function
+      Metadata:
+        cfn_nag:
+          rules_to_suppress:
+            - id: W89
+              reason: "This resource does not need to access any other resource provisioned within a VPC."
+            - id: W92
+              reason: "This function does not performance optimization, so the default concurrency limits suffice."
       Properties:
         Code:
           ZipFile: |
             import json
             import cfnresponse
-
 
             def handler(event, context):
                 print("Event: %s" % json.dumps(event))
@@ -143,6 +149,11 @@ Resources:
 
   CognitoStandardAuthDefaultRole:
     Type: "AWS::IAM::Role"
+    Metadata:
+      cfn_nag:
+        rules_to_suppress:
+          - id: F38
+            reason: "The wildcard is used for a deny action, not an allow action."
     Properties:
       AssumeRolePolicyDocument:
         Version: "2012-10-17"
